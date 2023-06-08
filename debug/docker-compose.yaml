@@ -1,0 +1,153 @@
+version: "2.3"
+
+networks:
+  default:
+    name: sandbox-network
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.36.0.0/16
+
+services:
+
+  pg: #              docker exec -it sandbox-pg psql -U postgres
+    image: postgres:13.4
+    container_name: sandbox-pg
+    restart: always
+    mem_limit: 700M
+    environment:
+      POSTGRES_PASSWORD: "iWAKOy4uS3v04T7bWM3SHNLiR8WyBP"
+    ports:
+      - "12218:5432"
+    volumes:
+      - ~/volumes/sandbox/pg-data:/var/lib/postgresql/data
+      - ./pg-init:/docker-entrypoint-initdb.d
+    command:
+      - "docker-entrypoint.sh"
+      - "-c"
+      - "max-connections=800"
+
+  mongo:
+    image: mongo:4.4.9
+    container_name: sandbox-mongo
+    mem_limit: 700M
+    restart: always
+    ports:
+      - "12217:27017"
+    volumes:
+      - ~/volumes/sandbox/mongo:/data/db
+
+  mongo-express:
+    image: mongo-express:1.0.0-alpha.4
+    container_name: sandbox-mongo-express
+    mem_limit: 200M
+    restart: always
+    depends_on:
+      - mongo
+    ports:
+      - "12213:8081"                                        # MONGO   http://localhost:12213
+    environment:
+      ME_CONFIG_OPTIONS_EDITORTHEME: cobalt
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: 111
+      ME_CONFIG_MONGODB_SERVER: mongo
+
+  zoo:
+    container_name: sandbox-zoo
+    image: confluentinc/cp-zookeeper:5.5.0
+    user: "0:0"
+    mem_limit: 200M
+    restart: always
+    ports:
+      - "12212:2181"
+    volumes:
+      - ~/volumes/sandbox/zookeeper/data:/var/lib/zookeeper/data
+      - ~/volumes/sandbox/zookeeper/log:/var/lib/zookeeper/log
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 11
+      ZOOKEEPER_SYNC_LIMIT: 5
+
+  zoo-navigator:
+    container_name: sandbox-zoo-navigator
+    image: elkozmon/zoonavigator:1.1.2
+    restart: always
+    mem_limit: 500M
+    ports:
+      - "12210:9001"                              #  http://localhost:12210
+    environment:
+      HTTP_PORT: "9001"
+      AUTO_CONNECT_CONNECTION_ID: "MAIN"
+      CONNECTION_MAIN_NAME: "main"
+      CONNECTION_MAIN_CONN: "zoo:2181"
+
+  kf:
+    container_name: sandbox-kf
+    image: bitnami/kafka:3.2.1
+    mem_limit: 1G
+    restart: always
+    ports:
+      - "12211:9093"
+      - "12220:9094"
+      - "12215:7071"
+    depends_on:
+      - zoo
+    volumes:
+      - ~/volumes/sandbox/kafka:/bitnami/kafka
+    user: "0:0"
+    environment:
+      KAFKA_BROKER_ID: "1"
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "IN_DOCKER:PLAINTEXT,FROM_LOCALHOST:PLAINTEXT,FROM_OUT:PLAINTEXT"
+      KAFKA_CFG_ADVERTISED_LISTENERS: "IN_DOCKER://kf:9092,FROM_LOCALHOST://localhost:12211,FROM_OUT://192.168.11.23:10020"
+      KAFKA_CFG_LISTENERS: "IN_DOCKER://0.0.0.0:9092,FROM_LOCALHOST://0.0.0.0:9093,FROM_OUT://0.0.0.0:9094"
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: "IN_DOCKER"
+      KAFKA_CFG_ZOOKEEPER_CONNECT: "zoo:2181"
+
+      KAFKA_CFG_NUM_PARTITIONS: "4"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+      KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: "1"
+      KAFKA_CFG_LOG_RETENTION_HOURS: "-1"
+      KAFKA_HEAP_OPTS: "-Xmx1G -Xms1G"
+      KAFKA_CFG_UNCLEAN_LEADER_ELECTION: "true"
+      KAFKA_CFG_COMPRESSION_TYPE: 'gzip'
+      KAFKA_CFG_LOG_ROLL_HOURS: '1'
+
+  kafdrop:
+    container_name: sandbox-kafdrop
+    image: obsidiandynamics/kafdrop:3.30.0
+    mem_limit: 500M
+    restart: always
+    ports:
+      - "12214:9000"                              #  http://localhost:12214
+    environment:
+      KAFKA_BROKERCONNECT: "kf:9092"
+      SERVER_PORT: "9000"
+      JVM_OPTS: "-Xms500M -Xmx500M"
+      SERVER_SERVLET_CONTEXTPATH: "/"
+
+  es:
+    container_name: sandbox-es
+    image: elasticsearch:8.3.2
+    mem_limit: 3000M
+    restart: always
+    ports:
+      - "12216:9200"                              #  http://localhost:12216
+    environment:
+      - discovery.type=single-node
+      - node.name=from-plugin
+      - bootstrap.memory_lock=true
+      - index.store.type=hybridfs
+      - "ES_JAVA_OPTS=-Xms1500m -Xmx1500m"
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ~/volumes/sandbox/elasticsearch:/usr/share/elasticsearch/data

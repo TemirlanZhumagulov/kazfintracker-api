@@ -1,0 +1,78 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.7.12'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+group = 'kz.greetgo'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    // region spring
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // endregion spring
+
+
+    // region mongo
+    implementation 'org.mongodb:mongodb-driver-sync:4.5.1'
+    // endregion mongo
+
+
+    // region lombok
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    // endregion lombok
+
+
+    // region zookeeper
+    implementation 'kz.greetgo.conf:greetgo.conf:2.0.2'
+    implementation 'kz.greetgo.conf:greetgo.conf.zookeeper:2.0.2'
+    // endregion zookeeper
+
+
+    // region kafka
+    implementation 'kz.greetgo.kafka:greetgo.kafka:2.4.0'
+    implementation 'org.springframework.kafka:spring-kafka'
+    // endregion kafka
+
+
+    // region elastic
+    implementation 'org.elasticsearch.client:elasticsearch-rest-client:8.3.2'
+    implementation 'co.elastic.clients:elasticsearch-java:8.3.2'
+    // endregion elastic
+
+
+    // region scheduler
+    implementation 'kz.greetgo:greetgo.scheduling:3.1.0'
+    // endregion
+
+
+    // region postgre
+    implementation 'org.postgresql:postgresql:42.3.3'
+    // endregion postgre
+
+
+    // region test
+    testImplementation 'org.testng:testng:7.4.0'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'junit', module: 'junit'
+    }
+    testImplementation 'kz.greetgo.util:greetgo-util:1.0.3'
+    // endregion test
+
+}
+
+test {
+    useTestNG()
+}
+
+tasks.withType(Test) {
+    jvmArgs = ['-Xms2048m', '-Xmx2048m']
+}
