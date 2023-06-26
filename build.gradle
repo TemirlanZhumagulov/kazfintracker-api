@@ -12,13 +12,13 @@ repositories {
     mavenCentral()
 }
 
+
 dependencies {
 
     // region spring
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     // endregion spring
-
 
     // region mongo
     implementation 'org.mongodb:mongodb-driver-sync:4.5.1'
@@ -53,6 +53,7 @@ dependencies {
     implementation 'kz.greetgo:greetgo.scheduling:3.1.0'
     // endregion
 
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.7.3'
 
     // region postgre
     implementation 'org.postgresql:postgresql:42.3.3'
@@ -68,6 +69,7 @@ dependencies {
     // endregion test
 
 }
+
 
 test {
     useTestNG()

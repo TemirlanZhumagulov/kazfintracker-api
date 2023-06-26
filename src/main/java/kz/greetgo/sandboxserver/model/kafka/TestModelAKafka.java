@@ -33,6 +33,7 @@ public class TestModelAKafka {
     elastic.id = id;
     elastic.strField = strField;
 
+
     return elastic;
   }
 

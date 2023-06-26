@@ -5,6 +5,7 @@ import kz.greetgo.sandboxserver.elastic.ElasticWorker;
 import kz.greetgo.sandboxserver.elastic.model.EsBodyWrapper;
 import kz.greetgo.sandboxserver.model.Paging;
 import kz.greetgo.sandboxserver.model.elastic.TestModelAElastic;
+import kz.greetgo.sandboxserver.model.web.ClientsTableRequest;
 import kz.greetgo.sandboxserver.model.web.TableRequest;
 import kz.greetgo.sandboxserver.register.TestAElasticRegister;
 import kz.greetgo.sandboxserver.util.jackson.ObjectMapperHolder;
@@ -34,7 +35,7 @@ public class TestAElasticRegisterImpl implements TestAElasticRegister {
 
   @Override
   public List<TestModelAElastic> load(TableRequest tableRequest, Paging paging) {
-    EsBodyWrapper bodyWrapper = elasticWorker.find(ElasticIndexes.INDEX_MODEL_A, tableRequest.toMap(), paging);
+    EsBodyWrapper bodyWrapper = elasticWorker.find(ElasticIndexes.INDEX_MODEL_A, new ClientsTableRequest(), paging);
 
     return bodyWrapper.hits.hits()
       .stream()

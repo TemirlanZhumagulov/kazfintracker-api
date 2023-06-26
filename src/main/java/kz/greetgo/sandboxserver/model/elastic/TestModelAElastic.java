@@ -40,4 +40,12 @@ public class TestModelAElastic {
       "}";
   }
 
+
+  @Override
+  public String toString() {
+    return "TestModelAElastic{" +
+      "id='" + id + '\'' +
+              ", strField='" + strField + '}';
+
+    }
 }

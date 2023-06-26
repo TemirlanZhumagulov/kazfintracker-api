@@ -12,9 +12,12 @@ public class TableRequest {
   public Map<String, String> toMap() {
     Map<String, String> map = new HashMap<>();
 
-    map.put(TestModelAElastic.Fields.strField, strField);
+    if (strField != null) {
+      map.put(TestModelAElastic.Fields.strField, strField);
+    }
 
     return map;
   }
+
 
 }

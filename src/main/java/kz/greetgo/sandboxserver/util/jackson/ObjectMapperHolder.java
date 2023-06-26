@@ -1,5 +1,6 @@
 package kz.greetgo.sandboxserver.util.jackson;
 
+import ch.qos.logback.core.net.server.Client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -17,6 +18,7 @@ public final class ObjectMapperHolder {
 
   public static String writeJson(Object value) {
     try {
+      mapper.findAndRegisterModules();
       return mapper.writeValueAsString(value);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);

@@ -26,7 +26,9 @@ public class ConnectionWaiter {
   }
 
   public void checkAllOrError() {
+    System.out.println("START TO CHECK ERRORS");
     checkerList.forEach(ConnectionChecker::check);
+    System.out.println("FINISH TO CHECK ERORRS");
   }
 
   public void add(ConnectionChecker checker) {

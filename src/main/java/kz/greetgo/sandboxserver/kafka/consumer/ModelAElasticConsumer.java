@@ -19,7 +19,6 @@ public class ModelAElasticConsumer {
   @KafkaListener(id = "model-a-elastic-consumer", topics = KafkaTopics.TOPIC_MODEL_A, containerFactory = "containerFactory")
   public void consume(String value) {
     TestModelAKafka modelA = ObjectMapperHolder.readJson(value, TestModelAKafka.class);
-
     TestModelAElastic modelAElastic = modelA.toElastic();
 
     switch (modelA.changeVariant) {
