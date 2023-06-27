@@ -20,6 +20,7 @@ public class ClientToUpsert {
     private List<ClientAddress> addresses;
     private List<ClientPhone> phones;
     private ClientAccount account;
+    private String rndTestingId;
     public ObjectId objectId() {
         return new ObjectId(id);
     }

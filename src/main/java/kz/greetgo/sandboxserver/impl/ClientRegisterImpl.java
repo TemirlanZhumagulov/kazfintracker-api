@@ -21,6 +21,7 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -38,10 +39,7 @@ public class ClientRegisterImpl implements ClientRegister {
     @Override
     public String create(ClientToUpsert client) {
         Validator.validate(client, true);
-
-        log.info("BIRTH_DATE IS NOT NULL IN CLIENT TO UPSERT: " + client.getBirth_date());
         ClientDto dto = ClientDto.from(IdGenerator.generate(), client);
-        log.info("BIRTH DATE IS NOT NULL IN DTO THAT WE WANNA SENT TO MONGO: " + dto.birth_date);
         mongoAccess.client().insertOne(dto);
         kafkaProducer.sendClient(ClientKafka.fromDto(dto, ChangeVariant.CREATE));
 

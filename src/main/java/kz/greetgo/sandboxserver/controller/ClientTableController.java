@@ -23,11 +23,6 @@ public class ClientTableController {
         return clientElasticRegister.loadAll(Paging.of(offset, limit));
     }
 
-    @GetMapping("/count")
-    public int getClientListCount(){
-        return clientElasticRegister.getClientListCount();
-    }
-
     @PostMapping("/filtered")
     public ClientResponse load(@RequestParam(value = "offset", required = false, defaultValue = "0") int offset,
                                @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,

@@ -110,8 +110,8 @@ public class ElasticWorkerImpl implements InitializingBean, DisposableBean, Elas
     @Override
     public EsBodyWrapper find(String indexName, ClientsTableRequest tableRequest, Paging paging) {
         Map<String, String> valueMap = tableRequest.toMap();
-        if (valueMap.isEmpty() && tableRequest.sorting.isEmpty()) {
-            log.info("valueMap is empty. There is nothing to filter");
+        if (valueMap.isEmpty() && tableRequest.sorting == null) {
+            log.info("valueMap is empty. There is nothing to filter: " + valueMap.isEmpty());
             return findAll(indexName, paging);
         }
         String requestBody = sortFields(prefixAndMiddleMatch(valueMap), tableRequest.sorting);
@@ -145,6 +145,8 @@ public class ElasticWorkerImpl implements InitializingBean, DisposableBean, Elas
      */
     private String prefixAndMiddleMatch(Map<String, String> valueMap) {
 
+        log.info("prefixAndMiddleMatch() is activated");
+
         if (valueMap == null || valueMap.isEmpty()) {
             return "{\"query\": {\"match_all\": {}},";
         }
@@ -154,23 +156,38 @@ public class ElasticWorkerImpl implements InitializingBean, DisposableBean, Elas
         for (Map.Entry<String, String> entry : valueMap.entrySet()) {
             String field = entry.getKey();
             String value = entry.getValue();
-
-            filterQueryBuilder.append("{\"match_phrase_prefix\": {\"").append(field).append("\": \"").append(value).append("\"}},");
-            filterQueryBuilder.append("{\"wildcard\": {\"").append(field).append("\": \"*").append(value).append("*\"}},");
+//            if(entry.getKey().equals("full_name") || entry.getKey().equals("charm")){
+//                filterQueryBuilder.append("{\"match_phrase_prefix\": {\"").append(field).append(".text\": \"").append(value).append("\"}},");
+//                filterQueryBuilder.append("{\"wildcard\": {\"").append(field).append(".text\": \"*").append(value).append("*\"}},");
+//            } else {
+                filterQueryBuilder.append("{\"match_phrase_prefix\": {\"").append(field).append("\": \"").append(value).append("\"}},");
+                filterQueryBuilder.append("{\"wildcard\": {\"").append(field).append("\": \"*").append(value).append("*\"}},");
+//            }
         }
 
         // Remove the trailing comma
         filterQueryBuilder.deleteCharAt(filterQueryBuilder.length() - 1);
 
         filterQueryBuilder.append("]}}, ");
+        log.info("prefixAndMiddleMatch() built query:: " + filterQueryBuilder);
 
         return filterQueryBuilder.toString();
     }
 
     private String sortFields(String filteredRequestBody, HashMap<String,Boolean> sorting) {
+        if(sorting == null){
+            return filteredRequestBody;
+        }
+        log.info("sortFields() is caused");
         StringBuilder sortQueryBuilder = new StringBuilder(filteredRequestBody + "\"sort\": [");
         for (Map.Entry<String, Boolean> e : sorting.entrySet()) {
-            sortQueryBuilder.append("{\"").append(e.getKey()).append("\": { \"order\": ");
+            if(e.getKey().equals("full_name") || e.getKey().equals("charm")) {
+                log.info("full_name or charm is activated");
+                sortQueryBuilder.append("{\"").append(e.getKey()).append(".keyword\": { \"order\": ");
+            } else {
+                log.info("full_name or charm is NOT activated");
+                sortQueryBuilder.append("{\"").append(e.getKey()).append("\": { \"order\": ");
+            }
             if(e.getValue()){
                 sortQueryBuilder.append("\"asc\"}},");
             } else {

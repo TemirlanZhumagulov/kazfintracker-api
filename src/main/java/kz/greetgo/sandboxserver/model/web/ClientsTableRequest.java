@@ -16,6 +16,8 @@ public class ClientsTableRequest {
     public String min_balance;
     public String max_balance;
     public HashMap<String, Boolean> sorting;
+
+    public String rndTestingId;
 //    public boolean nameSorted;
 //    public boolean patronymicSorted;
 //    public boolean birth_dateSorted;
@@ -44,6 +46,9 @@ public class ClientsTableRequest {
         }
         if (min_balance != null) {
             map.put(ClientElastic.Fields.min_balance, min_balance);
+        }
+        if(rndTestingId != null){
+            map.put(ClientElastic.Fields.rndTestingId, rndTestingId);
         }
 
         return map;

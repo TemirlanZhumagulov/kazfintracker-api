@@ -7,6 +7,7 @@ import lombok.experimental.FieldNameConstants;
 import org.bson.types.ObjectId;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class ClientDto {
     public ClientAccount account;
     public List<ClientAddress> addresses;
     public List<ClientPhone> phones;
+    public String rndTestingId;
 
     public static ClientDto from(ObjectId id, ClientToUpsert client) {
         ClientDto dto = new ClientDto();
@@ -36,6 +38,7 @@ public class ClientDto {
         dto.surname = client.getSurname();
         dto.patronymic = client.getPatronymic();
         dto.phones = client.getPhones();
+        dto.rndTestingId = client.getRndTestingId();
         return dto;
     }
     public ClientToRead toRead() {
@@ -51,7 +54,6 @@ public class ClientDto {
         toRead.addresses = addresses;
         toRead.phones = phones;
         toRead.account = account;
-
         return toRead;
     }
 

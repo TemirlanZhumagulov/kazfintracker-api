@@ -36,14 +36,14 @@ public class ClientElasticRegisterImpl implements ClientElasticRegister {
     @Override
     public ClientResponse load(ClientsTableRequest tableRequest, Paging paging) {
         log.info("ClientTableRequest's sorting is received: " + tableRequest.sorting);
-        log.info("ClientTableRequest's data is received: " + tableRequest);
+        log.info("ClientTableRequest's rndTestingId is received: " + tableRequest.rndTestingId);
         EsBodyWrapper bodyWrapper = elasticWorker.find(ElasticIndexes.INDEX_CLIENT, tableRequest, paging);
         log.info("EsBodyWrapper is made: " + bodyWrapper.toString());
         return new ClientResponse(bodyWrapper.hits.hits()
                 .stream()
                 .map(hit -> hit._source)
                 .map(ClientElastic::fromMap)
-                .collect(Collectors.toList()), bodyWrapper._shards.total);
+                .collect(Collectors.toList()), bodyWrapper.hits.total.value);
     }
 
     @Override

@@ -26,6 +26,8 @@ public class ClientKafka {
     public List<ClientPhone> phones;
     public ClientAccount account;
 
+    public String rndTestingId;
+
     public static ClientKafka fromDto(ClientDto dto, ChangeVariant changeVariant) {
         ClientKafka kafka = new ClientKafka();
         kafka.id = dto.strId();
@@ -39,6 +41,7 @@ public class ClientKafka {
         kafka.account = dto.account;
         kafka.addresses = dto.addresses;
         kafka.phones = dto.phones;
+        kafka.rndTestingId = dto.rndTestingId;
         return kafka;
     }
 
@@ -52,6 +55,7 @@ public class ClientKafka {
         elastic.total_balance = Float.toString(account.getMoney());
         elastic.min_balance = Float.toString(account.getMinimumBalance());
         elastic.max_balance = Float.toString(account.getMaximumBalance());
+        elastic.rndTestingId = rndTestingId;
         return elastic;
     }
 
