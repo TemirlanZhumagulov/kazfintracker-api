@@ -10,8 +10,6 @@ import kz.greetgo.sandboxserver.model.web.upsert.ClientAddress;
 import kz.greetgo.sandboxserver.model.web.upsert.ClientToUpsert;
 import kz.greetgo.sandboxserver.spring_config.connection.Connections;
 import kz.greetgo.sandboxserver.spring_config.scheduler.SchedulerManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -62,9 +60,11 @@ public class SandboxServerApplication extends SpringBootServletInitializer imple
 
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         List<ClientToUpsert> clients = generateRandomClients(10); // Generate 10 random clients
-
+        for (ClientToUpsert client : clients) {
+            clientRegister.create(client);
+        }
     }
 
     private List<ClientToUpsert> generateRandomClients(int count) {
@@ -87,9 +87,7 @@ public class SandboxServerApplication extends SpringBootServletInitializer imple
             client.setAccount(generateRandomAccount());
             clients.add(client);
         }
-        for (ClientToUpsert client : clients) {
-            clientRegister.create(client);
-        }
+
         return clients;
     }
 

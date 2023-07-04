@@ -1,12 +1,10 @@
 package kz.greetgo.sandboxserver.impl;
 
-import com.mongodb.client.MongoCollection;
 import kz.greetgo.sandboxserver.ParentTestNG;
 import kz.greetgo.sandboxserver.elastic.model.ClientResponse;
 import kz.greetgo.sandboxserver.kafka.consumer.ClientConsumer;
 import kz.greetgo.sandboxserver.model.Paging;
 import kz.greetgo.sandboxserver.model.elastic.ClientElastic;
-import kz.greetgo.sandboxserver.model.mongo.ClientDto;
 import kz.greetgo.sandboxserver.model.web.ClientsTableRequest;
 import kz.greetgo.sandboxserver.model.web.upsert.ClientToUpsert;
 import kz.greetgo.sandboxserver.mongo.MongoAccess;
@@ -17,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -64,17 +64,38 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     }
 
     @Test
-    public void getClientListCount(){
-        int count = elasticRegister.getClientListCount();
-        assertThat(count).isEqualTo(4);
+    public void deleteElasticClient(){
+        ClientToUpsert toUpsert = clientToUpsert();
+        toUpsert.setRndTestingId("deleteElasticClient");
+        //
+        //
+        String id = clientRegister.create(toUpsert);
+        //
+        //
+
+        kafkaProducerSimulator.push(ClientConsumer.class);
+
+        assertThat(id).isNotNull();
+
+        ClientsTableRequest tableRequest = new ClientsTableRequest();
+        tableRequest.rndTestingId="deleteElasticClient";
+
+        ClientResponse response = elasticRegister.load(tableRequest, Paging.defaultPaging());
+
+        assertThat(response.getClients()).hasSizeGreaterThan(0);
+
+        elasticRegister.delete(id);
+
+        ClientResponse response2 = elasticRegister.load(tableRequest, Paging.defaultPaging());
+
+        assertThat(response2.getClients()).hasSizeLessThanOrEqualTo(0);
     }
+
     @Test
-    public void testLoadAllPaging(){
-        MongoCollection<ClientDto> collection = mongoAccess.client();
-        long initialCount = collection.countDocuments();
-        System.out.println(" ------------------ Initial document count: " + initialCount);
-        ClientResponse response = elasticRegister.loadAll(Paging.of(10,0));
-        assertThat(response.getCount()).isEqualTo(initialCount);
+    public void testLoadAll(){
+        ClientResponse response = elasticRegister.loadAll(Paging.of(0,10));
+        int initialCount = elasticRegister.getClientListCount();
+        assertThat(response.getTotal()).isEqualTo(initialCount);
 
         ClientToUpsert toUpsert = clientToUpsert();
         //
@@ -91,31 +112,54 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
                 clientRegister.create(toUpsert),
                 clientRegister.create(toUpsert)
         };
+        kafkaProducerSimulator.push(ClientConsumer.class);
         //
         //
-        long afterInsertingCount = collection.countDocuments();
-        System.out.println(" ------------------ After inserting all documents count: " + afterInsertingCount);
-        assertThat(afterInsertingCount).isEqualTo(initialCount + 10);
-        ClientResponse response2 = elasticRegister.loadAll(Paging.of(10,0));
-        assertThat(response2.getCount()).isEqualTo(afterInsertingCount);
+        ClientResponse response2 = elasticRegister.loadAll(Paging.of(0,10));
+        //
+        //
+        int afterInsertCount = elasticRegister.getClientListCount();
+        assertThat(response2.getTotal()).isEqualTo(afterInsertCount);
 
-//        List<ClientElastic> list = elasticRegister.loadAll(Paging.of(0, 7));
-//        assertThat(list).isNotNull();
-//        logger.info("The First page limit 10 {}", list);
-//        assertThat(list.size()).isEqualTo(7);
-//
-//        List<ClientElastic> list2 = elasticRegister.loadAll(Paging.of(1, 3));
-//        logger.info("The Second page limit 10 {}", list2);
-//        assertThat(list2.size()).isEqualTo(3);
-//
         // Clear data inserted
         IntStream.range(0, ids.length).forEach(i -> clientRegister.delete(ids[i]));
-        long afterDeletingCount = collection.countDocuments();
-        System.out.println(" ------------------ After deleting all documents count: " + afterDeletingCount);
-        assertThat(afterDeletingCount).isEqualTo(initialCount);
-        ClientResponse response3 = elasticRegister.loadAll(Paging.of(10,0));
-        assertThat(response3.getCount()).isEqualTo(afterDeletingCount);
+        ClientResponse response3 = elasticRegister.loadAll(Paging.of(0,10));
+        int afterDeletingCount = elasticRegister.getClientListCount();
+        assertThat(response3.getTotal()).isEqualTo(afterDeletingCount);
+    }
 
+    @Test
+    public void testLoadAllPaging(){
+        List<ClientToUpsert> toUpsert = getTestClients("testLoadAllPaging");
+        String[] ids = new String[toUpsert.size()];
+
+        for (int i = 0; i < toUpsert.size(); i++) {
+            //
+            //
+            ids[i] = clientRegister.create(toUpsert.get(i));
+            //
+            //
+        }
+        kafkaProducerSimulator.push(ClientConsumer.class);
+        //
+        //
+        ClientResponse response = elasticRegister.loadAll(Paging.of(0,7));
+        //
+        //
+        List<ClientElastic> clients = response.getClients();
+        assertThat(clients).isNotNull();
+        assertThat(clients.size()).isEqualTo(7);
+
+        ClientResponse response2 = elasticRegister.loadAll(Paging.of(1,5));
+        List<ClientElastic> clients2 = response2.getClients();
+        assertThat(clients2).isNotNull();
+        assertThat(clients2.size()).isEqualTo(5);
+
+        // Clear data inserted
+        IntStream.range(0, ids.length).forEach(i -> clientRegister.delete(ids[i]));
+        ClientResponse response5 = elasticRegister.loadAll(Paging.of(0,10));
+        int afterDeletingCount = elasticRegister.getClientListCount();
+        assertThat(response5.getTotal()).isEqualTo(afterDeletingCount);
     }
 
 
@@ -137,6 +181,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("full_name", true);
         ctr.rndTestingId = uniqueTestingId;
+        kafkaProducerSimulator.push(ClientConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
@@ -154,7 +199,8 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     @Test
     public void sortFullNameDesc(){
         // Data prep
-        List<ClientToUpsert> clients = getTestClients("sortFullNameDesc1");
+        String uniqueTestingId = "sortFullNameDesc2";
+        List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
         String[] idArray = new String[10];
         for (int i = 0; i < 10; i++) {
             //
@@ -165,8 +211,11 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         }
 
         ClientsTableRequest ctr = new ClientsTableRequest();
-        ctr.sorting.put("full_name", true);
-        ctr.rndTestingId = "sortFullNameDesc";
+        ctr.sorting = new HashMap<>();
+        ctr.sorting.put("full_name", false);
+        ctr.rndTestingId = uniqueTestingId;
+        kafkaProducerSimulator.push(ClientConsumer.class);
+
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
@@ -184,19 +233,401 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
 
     @Test
     public void sortAgeAsc(){
-
+        // Data prep
+        String uniqueTestingId = "sortAgeAsc2";
+        List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
+        String[] idArray = new String[10];
+        for (int i = 0; i < 10; i++) {
+            //
+            //
+            idArray[i] = clientRegister.create(clients.get(i));
+            logger.info("Client Is Created " + clients.get(i));
+            //
+            //
+        }
+        ClientsTableRequest ctr = new ClientsTableRequest();
+        ctr.sorting = new HashMap<>();
+        ctr.sorting.put("age", true);
+        ctr.rndTestingId = uniqueTestingId;
+        kafkaProducerSimulator.push(ClientConsumer.class);
+        //
+        //
+        ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
+        //
+        //
+        List<ClientElastic> clientElastics = clientResponse.getClients();
+        for (int i = 0; i < 10; i++) {
+            assertThat(Integer.parseInt(clientElastics.get(i).age)).isEqualTo(Period.between(clients.get(9 - i).getBirth_date(), LocalDate.now()).getYears());
+        }
+        // Data clean
+        for (int i = 0; i < 10; i++) {
+            clientRegister.delete(idArray[i]);
+        }
     }
     @Test
     public void sortAgeDesc(){
-
+// Data prep
+        String uniqueTestingId = "sortAgeDesc";
+        List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
+        String[] idArray = new String[10];
+        for (int i = 0; i < 10; i++) {
+            //
+            //
+            idArray[i] = clientRegister.create(clients.get(i));
+            logger.info("Client Is Created " + clients.get(i));
+            //
+            //
+        }
+        ClientsTableRequest ctr = new ClientsTableRequest();
+        ctr.sorting = new HashMap<>();
+        ctr.sorting.put("age", false);
+        ctr.rndTestingId = uniqueTestingId;
+        kafkaProducerSimulator.push(ClientConsumer.class);
+        //
+        //
+        ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
+        //
+        //
+        List<ClientElastic> clientElastics = clientResponse.getClients();
+        for (int i = 0; i < 10; i++) {
+            assertThat(Integer.parseInt(clientElastics.get(i).age)).isEqualTo(Period.between(clients.get(i).getBirth_date(), LocalDate.now()).getYears());
+        }
+        // Data clean
+        for (int i = 0; i < 10; i++) {
+            clientRegister.delete(idArray[i]);
+        }
     }
     @Test
-    public void sort(){
-
+    public void sortCharmAsc(){
+        // Data prep
+        String uniqueTestingId = "sortCharmAsc2";
+        List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
+        String[] idArray = new String[10];
+        for (int i = 0; i < 10; i++) {
+            //
+            //
+            idArray[i] = clientRegister.create(clients.get(i));
+            //
+            //
+        }
+        ClientsTableRequest ctr = new ClientsTableRequest();
+        ctr.sorting = new HashMap<>();
+        ctr.sorting.put("charm", true);
+        ctr.rndTestingId = uniqueTestingId;
+        kafkaProducerSimulator.push(ClientConsumer.class);
+        //
+        //
+        ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
+        //
+        //
+        List<ClientElastic> clientElastics = clientResponse.getClients();
+        for (int i = 0; i < 10; i++) {
+            assertThat(clientElastics.get(i).charm).isEqualTo(clients.get(i).getCharm().getName());
+        }
+        // Data clean
+        for (int i = 0; i < 10; i++) {
+            clientRegister.delete(idArray[i]);
+        }
     }
 
     @Test
-    public void testFiltered() {
-        //...
+    public void sortCharmDesc(){
+        // Data prep
+        String uniqueTestingId = "sortCharmDesc";
+        List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
+        String[] idArray = new String[10];
+        for (int i = 0; i < 10; i++) {
+            //
+            //
+            idArray[i] = clientRegister.create(clients.get(i));
+            //
+            //
+        }
+        ClientsTableRequest ctr = new ClientsTableRequest();
+        ctr.sorting = new HashMap<>();
+        ctr.sorting.put("charm", false);
+        ctr.rndTestingId = uniqueTestingId;
+        kafkaProducerSimulator.push(ClientConsumer.class);
+        //
+        //
+        ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
+        //
+        //
+        List<ClientElastic> clientElastics = clientResponse.getClients();
+        for (int i = 0; i < 10; i++) {
+            assertThat(clientElastics.get(i).charm).isEqualTo(clients.get(9 - i).getCharm().getName());
+        }
+        // Data clean
+        for (int i = 0; i < 10; i++) {
+            clientRegister.delete(idArray[i]);
+        }
+    }
+
+    @Test
+    public void sortTotalBalanceAsc(){
+        // Data prep
+        String uniqueTestingId = "sortTotalBalanceAsc";
+        List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
+        String[] idArray = new String[10];
+        for (int i = 0; i < 10; i++) {
+            //
+            //
+            idArray[i] = clientRegister.create(clients.get(i));
+            //
+            //
+        }
+        ClientsTableRequest ctr = new ClientsTableRequest();
+        ctr.sorting = new HashMap<>();
+        ctr.sorting.put("total_balance", true);
+        ctr.rndTestingId = uniqueTestingId;
+        kafkaProducerSimulator.push(ClientConsumer.class);
+        //
+        //
+        ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
+        //
+        //
+        List<ClientElastic> clientElastics = clientResponse.getClients();
+        for (int i = 0; i < 10; i++) {
+            assertThat(Float.parseFloat(clientElastics.get(i).total_balance)).isEqualTo(clients.get(i).getAccount().getTotal_balance());
+        }
+        // Data clean
+        for (int i = 0; i < 10; i++) {
+            clientRegister.delete(idArray[i]);
+        }
+    }
+    @Test
+    public void sortTotalBalanceDesc(){
+        // Data prep
+        String uniqueTestingId = "sortTotalBalanceDesc";
+        List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
+        String[] idArray = new String[10];
+        for (int i = 0; i < 10; i++) {
+            //
+            //
+            idArray[i] = clientRegister.create(clients.get(i));
+            //
+            //
+        }
+        ClientsTableRequest ctr = new ClientsTableRequest();
+        ctr.sorting = new HashMap<>();
+        ctr.sorting.put("total_balance", false);
+        ctr.rndTestingId = uniqueTestingId;
+        kafkaProducerSimulator.push(ClientConsumer.class);
+        //
+        //
+        ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
+        //
+        //
+        List<ClientElastic> clientElastics = clientResponse.getClients();
+        for (int i = 0; i < 10; i++) {
+            assertThat(Float.parseFloat(clientElastics.get(i).total_balance)).isEqualTo(clients.get(9 - i).getAccount().getTotal_balance());
+        }
+        // Data clean
+        for (int i = 0; i < 10; i++) {
+            clientRegister.delete(idArray[i]);
+        }
+    }
+    @Test
+    public void sortMaxBalanceAsc(){
+        // Data prep
+        String uniqueTestingId = "sortMaxBalanceAsc";
+        List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
+        String[] idArray = new String[10];
+        for (int i = 0; i < 10; i++) {
+            //
+            //
+            idArray[i] = clientRegister.create(clients.get(i));
+            //
+            //
+        }
+        ClientsTableRequest ctr = new ClientsTableRequest();
+        ctr.sorting = new HashMap<>();
+        ctr.sorting.put("max_balance", true);
+        ctr.rndTestingId = uniqueTestingId;
+        kafkaProducerSimulator.push(ClientConsumer.class);
+        //
+        //
+        ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
+        //
+        //
+        List<ClientElastic> clientElastics = clientResponse.getClients();
+        for (int i = 0; i < 10; i++) {
+            assertThat(Float.parseFloat(clientElastics.get(i).max_balance)).isEqualTo(clients.get(i).getAccount().getMax_balance());
+        }
+        // Data clean
+        for (int i = 0; i < 10; i++) {
+            clientRegister.delete(idArray[i]);
+        }
+    }
+    @Test
+    public void sortMaxBalanceDesc(){
+        // Data prep
+        String uniqueTestingId = "sortMaxBalanceDesc";
+        List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
+        String[] idArray = new String[10];
+        for (int i = 0; i < 10; i++) {
+            //
+            //
+            idArray[i] = clientRegister.create(clients.get(i));
+            //
+            //
+        }
+        ClientsTableRequest ctr = new ClientsTableRequest();
+        ctr.sorting = new HashMap<>();
+        ctr.sorting.put("max_balance", false);
+        ctr.rndTestingId = uniqueTestingId;
+        kafkaProducerSimulator.push(ClientConsumer.class);
+        //
+        //
+        ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
+        //
+        //
+        List<ClientElastic> clientElastics = clientResponse.getClients();
+        for (int i = 0; i < 10; i++) {
+            assertThat(Float.parseFloat(clientElastics.get(i).max_balance)).isEqualTo(clients.get(9 - i).getAccount().getMax_balance());
+        }
+        // Data clean
+        for (int i = 0; i < 10; i++) {
+            clientRegister.delete(idArray[i]);
+        }
+    }
+    @Test
+    public void sortMinBalanceAsc(){
+        // Data prep
+        String uniqueTestingId = "sortMinBalanceAsc";
+        List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
+        String[] idArray = new String[10];
+        for (int i = 0; i < 10; i++) {
+            //
+            //
+            idArray[i] = clientRegister.create(clients.get(i));
+            //
+            //
+        }
+        ClientsTableRequest ctr = new ClientsTableRequest();
+        ctr.sorting = new HashMap<>();
+        ctr.sorting.put("min_balance", true);
+        ctr.rndTestingId = uniqueTestingId;
+        kafkaProducerSimulator.push(ClientConsumer.class);
+        //
+        //
+        ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
+        //
+        //
+        List<ClientElastic> clientElastics = clientResponse.getClients();
+        for (int i = 0; i < 10; i++) {
+            assertThat(Float.parseFloat(clientElastics.get(i).min_balance)).isEqualTo(clients.get(i).getAccount().getMin_balance());
+        }
+        // Data clean
+        for (int i = 0; i < 10; i++) {
+            clientRegister.delete(idArray[i]);
+        }
+    }
+    @Test
+    public void sortMinBalanceDesc(){
+        // Data prep
+        String uniqueTestingId = "sortMinBalanceDesc";
+        List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
+        String[] idArray = new String[10];
+        for (int i = 0; i < 10; i++) {
+            //
+            //
+            idArray[i] = clientRegister.create(clients.get(i));
+            //
+            //
+        }
+        ClientsTableRequest ctr = new ClientsTableRequest();
+        ctr.sorting = new HashMap<>();
+        ctr.sorting.put("min_balance", false);
+        ctr.rndTestingId = uniqueTestingId;
+        kafkaProducerSimulator.push(ClientConsumer.class);
+        //
+        //
+        ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
+        //
+        //
+        List<ClientElastic> clientElastics = clientResponse.getClients();
+        for (int i = 0; i < 10; i++) {
+            assertThat(Float.parseFloat(clientElastics.get(i).min_balance)).isEqualTo(clients.get(9 - i).getAccount().getMin_balance());
+        }
+        // Data clean
+        for (int i = 0; i < 10; i++) {
+            clientRegister.delete(idArray[i]);
+        }
+    }
+    @Test
+    public void testLoadPaginationWithSorting() {
+        // Data prep
+        String uniqueTestingId = "testLoadPagination4";
+        List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
+        String[] idArray = new String[10];
+        for (int i = 0; i < 10; i++) {
+            //
+            //
+            idArray[i] = clientRegister.create(clients.get(i));
+            //
+            //
+        }
+        ClientsTableRequest ctr = new ClientsTableRequest();
+        ctr.sorting = new HashMap<>();
+        ctr.sorting.put("charm", true);
+        ctr.rndTestingId = uniqueTestingId;
+        kafkaProducerSimulator.push(ClientConsumer.class);
+        //
+        //
+        ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,5));
+        logger.info("t1VY0WZUXL :: " + clientResponse.getClients().toString());
+        ClientResponse clientResponse2 = elasticRegister.load(ctr, Paging.of(5,5));
+        logger.info("OJIs4s9PLX :: " + clientResponse2.getClients().toString());
+        //
+        //
+        List<ClientElastic> clientElastics = clientResponse.getClients();
+        List<ClientElastic> clientElastics2 = clientResponse2.getClients();
+        for (int i = 0; i < 5; i++) {
+            assertThat(clientElastics.get(i).charm).isEqualTo(clients.get(i).getCharm().getName());
+        }
+        for (int i = 0; i < 5; i++) {
+            assertThat(clientElastics2.get(i).charm).isEqualTo(clients.get(i + 5).getCharm().getName());
+        }
+        // Data clean
+        for (int i = 0; i < 10; i++) {
+            clientRegister.delete(idArray[i]);
+        }
+    }
+
+    @Test
+    public void testLoadPaginationWithFilter() {
+        // Data prep
+        String uniqueName = "UNIQUE NAME";
+        List<ClientToUpsert> clients = getTestClientsForFilter(uniqueName);
+        String[] idArray = new String[10];
+        for (int i = 0; i < 10; i++) {
+            //
+            //
+            idArray[i] = clientRegister.create(clients.get(i));
+            //
+            //
+        }
+        ClientsTableRequest ctr = new ClientsTableRequest();
+        ctr.sorting = new HashMap<>();
+        ctr.sorting.put("charm", true);
+        ctr.full_name = uniqueName;
+        kafkaProducerSimulator.push(ClientConsumer.class);
+        //
+        //
+        ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,3));
+        logger.info("t1VY0WZUXL :: " + clientResponse.getClients().toString());
+        //
+        //
+        List<ClientElastic> clientElastics = clientResponse.getClients();
+        assertThat(clientElastics.size()).isEqualTo(3);
+        for (int i = 0; i < 3; i++) {
+            assertThat(clientElastics.get(i).charm).isEqualTo(clients.get(i).getCharm().getName());
+            assertThat(clientElastics.get(i).full_name).isEqualTo(uniqueName + " " + uniqueName + " " + uniqueName);
+        }
+        // Data clean
+        for (int i = 0; i < 10; i++) {
+            clientRegister.delete(idArray[i]);
+        }
     }
 }

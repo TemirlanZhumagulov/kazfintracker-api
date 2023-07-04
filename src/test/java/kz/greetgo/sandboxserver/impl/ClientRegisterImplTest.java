@@ -6,9 +6,11 @@ import kz.greetgo.sandboxserver.exception.NoElementWasFoundException;
 import kz.greetgo.sandboxserver.model.mongo.ClientDto;
 import kz.greetgo.sandboxserver.model.web.enums.AddrType;
 import kz.greetgo.sandboxserver.model.web.enums.Gender;
-import kz.greetgo.sandboxserver.model.web.enums.PhoneType;
 import kz.greetgo.sandboxserver.model.web.read.ClientToRead;
-import kz.greetgo.sandboxserver.model.web.upsert.*;
+import kz.greetgo.sandboxserver.model.web.upsert.Charm;
+import kz.greetgo.sandboxserver.model.web.upsert.ClientAccount;
+import kz.greetgo.sandboxserver.model.web.upsert.ClientAddress;
+import kz.greetgo.sandboxserver.model.web.upsert.ClientToUpsert;
 import kz.greetgo.sandboxserver.mongo.MongoAccess;
 import kz.greetgo.sandboxserver.register.ClientRegister;
 import org.bson.types.ObjectId;
@@ -16,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -120,9 +121,7 @@ public class ClientRegisterImplTest extends ParentTestNG {
             new ClientAddress(AddrType.REG, "asd", "123", "8"),
             new ClientAddress(AddrType.FAC, "asdaads", "221", "8")
     ));
-    toUpsert.setPhones(List.of(
-            new ClientPhone("8888888888888", PhoneType.HOME)
-    ));
+    toUpsert.setPhones(List.of("8888888888888", "8888888888888"));
     toUpsert.setAccount(new ClientAccount(1F, 1F, 10000000F));
     toUpsert.setBirth_date(LocalDate.of(2002,12,03));
 

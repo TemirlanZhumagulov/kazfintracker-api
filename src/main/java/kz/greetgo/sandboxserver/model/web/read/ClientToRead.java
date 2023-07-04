@@ -4,7 +4,6 @@ import kz.greetgo.sandboxserver.model.web.enums.Gender;
 import kz.greetgo.sandboxserver.model.web.upsert.Charm;
 import kz.greetgo.sandboxserver.model.web.upsert.ClientAccount;
 import kz.greetgo.sandboxserver.model.web.upsert.ClientAddress;
-import kz.greetgo.sandboxserver.model.web.upsert.ClientPhone;
 
 import java.time.LocalDate;
 import java.util.List;

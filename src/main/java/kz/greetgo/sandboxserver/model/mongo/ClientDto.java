@@ -2,13 +2,14 @@ package kz.greetgo.sandboxserver.model.mongo;
 
 import kz.greetgo.sandboxserver.model.web.enums.Gender;
 import kz.greetgo.sandboxserver.model.web.read.ClientToRead;
-import kz.greetgo.sandboxserver.model.web.upsert.*;
+import kz.greetgo.sandboxserver.model.web.upsert.Charm;
+import kz.greetgo.sandboxserver.model.web.upsert.ClientAccount;
+import kz.greetgo.sandboxserver.model.web.upsert.ClientAddress;
+import kz.greetgo.sandboxserver.model.web.upsert.ClientToUpsert;
 import lombok.experimental.FieldNameConstants;
 import org.bson.types.ObjectId;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @FieldNameConstants

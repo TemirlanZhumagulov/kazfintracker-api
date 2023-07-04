@@ -5,7 +5,6 @@ import kz.greetgo.sandboxserver.elastic.model.CountWrapper;
 import kz.greetgo.sandboxserver.elastic.model.EsBodyWrapper;
 import kz.greetgo.sandboxserver.model.Paging;
 import kz.greetgo.sandboxserver.model.web.ClientsTableRequest;
-import kz.greetgo.sandboxserver.model.web.TableRequest;
 import kz.greetgo.sandboxserver.util.jackson.ObjectMapperHolder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -123,7 +122,7 @@ public class ElasticWorkerImpl implements InitializingBean, DisposableBean, Elas
     public EsBodyWrapper find(String indexName, ClientsTableRequest tableRequest, Paging paging) {
         Map<String, String> valueMap = tableRequest.toMap();
         if (valueMap.isEmpty() && tableRequest.sorting == null) {
-            log.info("valueMap is empty. There is nothing to filter: " + valueMap.isEmpty());
+            log.info("valueMap is empty. There is nothing to filter!");
             return findAll(indexName, paging);
         }
         String requestBody = sortFields(prefixAndMiddleMatch(valueMap), tableRequest.sorting);

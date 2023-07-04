@@ -2,9 +2,7 @@ package kz.greetgo.sandboxserver.model.elastic;
 
 import kz.greetgo.sandboxserver.elastic.ElasticIndexes;
 import lombok.experimental.FieldNameConstants;
-import org.springframework.stereotype.Component;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 

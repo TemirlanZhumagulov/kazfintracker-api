@@ -6,7 +6,6 @@ import kz.greetgo.sandboxserver.model.web.enums.Gender;
 import kz.greetgo.sandboxserver.model.web.upsert.Charm;
 import kz.greetgo.sandboxserver.model.web.upsert.ClientAccount;
 import kz.greetgo.sandboxserver.model.web.upsert.ClientAddress;
-import kz.greetgo.sandboxserver.model.web.upsert.ClientPhone;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -26,7 +25,7 @@ public class ClientKafka {
     public String workPhone;
     public String mobilePhone;
     public List<ClientAddress> addresses;
-    private List<String> phones;
+    public List<String> phones;
     public ClientAccount account;
 
     public String rndTestingId;

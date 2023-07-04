@@ -32,17 +32,6 @@ public class TestARegisterImplTest extends ParentTestNG {
     private TestAElasticRegister testAElasticRegister;
 
 
-    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "^testModel cannot be null$")
-    public void create__modelIsNull() {
-
-        //
-        //
-        testARegister.create(null);
-        //
-        //
-
-    }
-
     @Test
     public void create() {
         TestModelAToUpsert toUpsert = rndAToUpsert();

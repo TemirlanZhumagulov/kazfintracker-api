@@ -2,7 +2,6 @@ package kz.greetgo.sandboxserver.elastic;
 
 import kz.greetgo.sandboxserver.model.elastic.ClientElastic;
 import kz.greetgo.sandboxserver.model.elastic.ElasticModel;
-import kz.greetgo.sandboxserver.model.elastic.TestModelAElastic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -3,7 +3,6 @@ package kz.greetgo.sandboxserver.elastic;
 import kz.greetgo.sandboxserver.elastic.model.EsBodyWrapper;
 import kz.greetgo.sandboxserver.model.Paging;
 import kz.greetgo.sandboxserver.model.web.ClientsTableRequest;
-import kz.greetgo.sandboxserver.model.web.TableRequest;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 
