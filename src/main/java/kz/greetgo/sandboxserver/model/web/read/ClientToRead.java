@@ -18,6 +18,9 @@ public class ClientToRead {
     public LocalDate birth_date;
     public Charm charm;
     public ClientAccount account;
+    public String homePhone;
+    public String workPhone;
+    public String mobilePhone;
     public List<ClientAddress> addresses;
-    public List<ClientPhone> phones;
+    public List<String> phones;
 }

@@ -12,7 +12,6 @@ repositories {
     mavenCentral()
 }
 
-
 dependencies {
 
     // region spring
@@ -47,6 +46,7 @@ dependencies {
     implementation 'org.elasticsearch.client:elasticsearch-rest-client:8.3.2'
     implementation 'co.elastic.clients:elasticsearch-java:8.3.2'
     // endregion elastic
+
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
 
 
@@ -55,8 +55,15 @@ dependencies {
     // endregion
 
     // region email
+    implementation "com.sun.mail:jakarta.mail:1.6.4"
+    implementation 'kz.greetgo.conf:greetgo.conf:2.0.3'
     implementation 'kz.greetgo:greetgo.email:1.0.7'
-    // endrefion email
+    implementation 'org.springframework.boot:spring-boot-starter-mail:1.2.0.RELEASE'
+
+
+    //    implementation 'kz.greetgo:greetgo.email:0.0.10'
+    //    implementation 'com.github.greetgo:greetgo.email:1.0.5'
+    // endregion email
 
     // region postgre
     implementation 'org.postgresql:postgresql:42.3.8'
@@ -71,9 +78,7 @@ dependencies {
     testImplementation 'kz.greetgo.util:greetgo-util:1.0.3'
     // endregion test
 
-
 }
-
 
 test {
     useTestNG()

@@ -1,27 +1,35 @@
 package kz.greetgo.sandboxserver;
 
+import kz.greetgo.sandboxserver.config.BeanConfigForTests;
+import kz.greetgo.sandboxserver.kafka.KafkaProducerSimulator;
 import kz.greetgo.sandboxserver.model.web.enums.AddrType;
 import kz.greetgo.sandboxserver.model.web.enums.Gender;
 import kz.greetgo.sandboxserver.model.web.enums.PhoneType;
 import kz.greetgo.sandboxserver.model.web.upsert.*;
-import kz.greetgo.sandboxserver.config.BeanConfigForTests;
 import kz.greetgo.sandboxserver.util.IdGenerator;
 import kz.greetgo.util.RND;
-import org.bson.codecs.jsr310.LocalDateCodec;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.BeforeMethod;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 @ContextConfiguration(classes = BeanConfigForTests.class)
 @TestPropertySource(locations = "classpath:application.properties")
 public class ParentTestNG extends AbstractTestNGSpringContextTests {
+
+  @Autowired
+  protected KafkaProducerSimulator kafkaProducerSimulator;
+
+  @BeforeMethod
+  public void init() {
+    kafkaProducerSimulator.clear();
+  }
+
   protected TestModelAToUpsert rndAToUpsert() {
     TestModelAToUpsert toUpsert = new TestModelAToUpsert();
 

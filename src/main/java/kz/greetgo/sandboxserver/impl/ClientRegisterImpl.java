@@ -3,16 +3,14 @@ package kz.greetgo.sandboxserver.impl;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import kz.greetgo.sandboxserver.exception.NoElementWasFoundException;
-import kz.greetgo.sandboxserver.kafka.producer.KafkaProducer;
 import kz.greetgo.sandboxserver.model.kafka.ChangeVariant;
 import kz.greetgo.sandboxserver.model.kafka.ClientKafka;
-import kz.greetgo.sandboxserver.model.kafka.TestModelAKafka;
 import kz.greetgo.sandboxserver.model.mongo.ClientDto;
-import kz.greetgo.sandboxserver.model.mongo.TestModelADto;
 import kz.greetgo.sandboxserver.model.web.read.ClientToRead;
 import kz.greetgo.sandboxserver.model.web.upsert.ClientToUpsert;
 import kz.greetgo.sandboxserver.mongo.MongoAccess;
 import kz.greetgo.sandboxserver.register.ClientRegister;
+import kz.greetgo.sandboxserver.register.kafka.KafkaProducer;
 import kz.greetgo.sandboxserver.util.IdGenerator;
 import kz.greetgo.sandboxserver.util.Validator;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +19,6 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 

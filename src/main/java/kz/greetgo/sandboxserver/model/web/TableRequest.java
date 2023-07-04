@@ -19,5 +19,4 @@ public class TableRequest {
     return map;
   }
 
-
 }

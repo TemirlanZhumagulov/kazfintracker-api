@@ -1,9 +1,11 @@
 package kz.greetgo.sandboxserver.elastic;
 
+import kz.greetgo.sandboxserver.config.ElasticConfig;
 import kz.greetgo.sandboxserver.elastic.model.CountWrapper;
 import kz.greetgo.sandboxserver.elastic.model.EsBodyWrapper;
 import kz.greetgo.sandboxserver.model.Paging;
 import kz.greetgo.sandboxserver.model.web.ClientsTableRequest;
+import kz.greetgo.sandboxserver.model.web.TableRequest;
 import kz.greetgo.sandboxserver.util.jackson.ObjectMapperHolder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +42,9 @@ public class ElasticWorkerImpl implements InitializingBean, DisposableBean, Elas
 
     private RestClient restClient;
 
+    @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
+    @Autowired
+    private ElasticConfig elasticConfig;
 
     @Override
     public void afterPropertiesSet() {
@@ -72,6 +78,12 @@ public class ElasticWorkerImpl implements InitializingBean, DisposableBean, Elas
 
         request.setJsonEntity(mapping);
         log.info("REQUEST TO CREATE INDEX IS SENT: " + request);
+        return performRequest(request);
+    }
+    @Override
+    public Response refresh(String indexName) {
+        Request request = new Request("POST", "/_refresh");
+
         return performRequest(request);
     }
 
@@ -135,6 +147,32 @@ public class ElasticWorkerImpl implements InitializingBean, DisposableBean, Elas
 
         return bodyWrapper;
     }
+    @SneakyThrows
+    @Override
+    public EsBodyWrapper findModel(String indexName, Map<String, String> valueMap, Paging paging) {
+        if (valueMap.isEmpty()) {
+            return findAll(indexName, paging);
+        }
+
+        String requestBody = prefixMatch(valueMap);
+
+        Request request = new Request("POST", "/" + indexName + "/_search");
+
+        request.setJsonEntity(requestBody);
+
+        Response response = performRequest(request);
+
+        String body = EntityUtils.toString(response.getEntity());
+
+        EsBodyWrapper bodyWrapper = ObjectMapperHolder.readJson(body, EsBodyWrapper.class);
+
+        if (bodyWrapper.timed_out) {
+            throw new RuntimeException("Request to elastic has been timed out");
+        }
+
+        return bodyWrapper;
+    }
+
 
     /**
      * Метод использует should и находит матчы (match) по префиксу и
@@ -232,7 +270,14 @@ public class ElasticWorkerImpl implements InitializingBean, DisposableBean, Elas
         Request request = new Request("POST", "/" + indexName + "/_doc/" + documentId);
         HttpEntity entity = new NStringEntity(jsonifiedString, ContentType.APPLICATION_JSON);
         request.setEntity(entity);
-        return performRequest(request);
+
+        Response response = performRequest(request);
+
+        if (elasticConfig.updateImmediately()) {
+            refresh(indexName);
+        }
+
+        return response;
     }
 
     @Override
@@ -241,14 +286,24 @@ public class ElasticWorkerImpl implements InitializingBean, DisposableBean, Elas
         HttpEntity entity = new NStringEntity(jsonifiedString, ContentType.APPLICATION_JSON);
         request.setEntity(entity);
 
-        return performRequest(request);
-    }
+        Response response = performRequest(request);
+
+        if (elasticConfig.updateImmediately()) {
+            refresh(indexName);
+        }
+
+        return response;    }
 
     @Override
     public Response deleteDocument(String indexName, String documentId) {
         Request request = new Request("DELETE", "/" + indexName + "/_doc/" + documentId);
+        Response response = performRequest(request);
 
-        return performRequest(request);
+        if (elasticConfig.updateImmediately()) {
+            refresh(indexName);
+        }
+
+        return response;
     }
 
     @SneakyThrows

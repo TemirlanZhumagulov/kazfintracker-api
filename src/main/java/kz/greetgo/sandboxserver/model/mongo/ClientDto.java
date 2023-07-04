@@ -21,8 +21,11 @@ public class ClientDto {
     public LocalDate birth_date;
     public Charm charm;
     public ClientAccount account;
+    public String homePhone;
+    public String workPhone;
+    public String mobilePhone;
     public List<ClientAddress> addresses;
-    public List<ClientPhone> phones;
+    public List<String> phones;
     public String rndTestingId;
 
     public static ClientDto from(ObjectId id, ClientToUpsert client) {
@@ -38,6 +41,9 @@ public class ClientDto {
         dto.surname = client.getSurname();
         dto.patronymic = client.getPatronymic();
         dto.phones = client.getPhones();
+        dto.homePhone = client.getHomePhone();
+        dto.workPhone = client.getWorkPhone();
+        dto.mobilePhone = client.getMobilePhone();
         dto.rndTestingId = client.getRndTestingId();
         return dto;
     }
@@ -54,6 +60,9 @@ public class ClientDto {
         toRead.addresses = addresses;
         toRead.phones = phones;
         toRead.account = account;
+        toRead.mobilePhone = mobilePhone;
+        toRead.workPhone = workPhone;
+        toRead.homePhone = homePhone;
         return toRead;
     }
 

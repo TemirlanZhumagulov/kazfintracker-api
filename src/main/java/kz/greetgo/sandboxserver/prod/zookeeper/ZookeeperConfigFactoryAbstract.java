@@ -1,6 +1,7 @@
 package kz.greetgo.sandboxserver.prod.zookeeper;
 
 import kz.greetgo.conf.zookeeper.AbstractZookeeperConfigFactory;
+import kz.greetgo.sandboxserver.config.ElasticConfig;
 import kz.greetgo.sandboxserver.config.TestConfig;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +45,11 @@ public class ZookeeperConfigFactoryAbstract extends AbstractZookeeperConfigFacto
   @Bean
   public TestConfig testConfig() {
     return createConfig(TestConfig.class);
+  }
+
+  @Bean
+  public ElasticConfig elasticConfig() {
+    return createConfig(ElasticConfig.class);
   }
 
 }

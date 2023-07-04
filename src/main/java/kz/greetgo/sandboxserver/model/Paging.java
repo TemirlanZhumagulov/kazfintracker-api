@@ -15,4 +15,8 @@ public class Paging {
     return paging;
   }
 
+  public static Paging defaultPaging() {
+    return of(0, 10);
+  }
+
 }

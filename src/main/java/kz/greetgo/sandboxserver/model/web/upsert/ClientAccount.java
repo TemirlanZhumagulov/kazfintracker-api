@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ClientAccount {
-    private Float money;
-    private Float maximumBalance;
-    private Float minimumBalance;
+    private Float total_balance;
+    private Float max_balance;
+    private Float min_balance;
 
 }

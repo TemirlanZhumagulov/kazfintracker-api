@@ -43,7 +43,7 @@ public class ClientElasticRegisterImpl implements ClientElasticRegister {
                 .stream()
                 .map(hit -> hit._source)
                 .map(ClientElastic::fromMap)
-                .collect(Collectors.toList()), bodyWrapper.hits.total.value);
+                .collect(Collectors.toList()),  bodyWrapper.hits.total.value);
     }
 
     @Override

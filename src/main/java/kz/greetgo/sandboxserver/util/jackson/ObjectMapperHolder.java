@@ -1,6 +1,5 @@
 package kz.greetgo.sandboxserver.util.jackson;
 
-import ch.qos.logback.core.net.server.Client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

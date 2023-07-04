@@ -10,5 +10,4 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ClientPhone {
     private String number;
-    private PhoneType phoneType;
 }

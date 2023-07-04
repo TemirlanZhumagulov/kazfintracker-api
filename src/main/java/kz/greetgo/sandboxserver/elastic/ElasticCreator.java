@@ -2,6 +2,7 @@ package kz.greetgo.sandboxserver.elastic;
 
 import kz.greetgo.sandboxserver.model.elastic.ClientElastic;
 import kz.greetgo.sandboxserver.model.elastic.ElasticModel;
+import kz.greetgo.sandboxserver.model.elastic.TestModelAElastic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +15,6 @@ public class ElasticCreator {
   @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
   @Autowired
   private ElasticWorker elasticWorker;
-
 
   private static final List<ElasticModel> ELASTIC_MODELS = List.of(new ElasticModel() {
     @Override
@@ -29,7 +29,6 @@ public class ElasticCreator {
   });
 
   public void createNeededIndexes() {
-    System.out.println("R69VUNosLb :: INDEX client IS GONNA BE CREATED");
     createIndexes();
   }
 

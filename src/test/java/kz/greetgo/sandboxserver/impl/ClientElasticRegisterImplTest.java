@@ -3,6 +3,7 @@ package kz.greetgo.sandboxserver.impl;
 import com.mongodb.client.MongoCollection;
 import kz.greetgo.sandboxserver.ParentTestNG;
 import kz.greetgo.sandboxserver.elastic.model.ClientResponse;
+import kz.greetgo.sandboxserver.kafka.consumer.ClientConsumer;
 import kz.greetgo.sandboxserver.model.Paging;
 import kz.greetgo.sandboxserver.model.elastic.ClientElastic;
 import kz.greetgo.sandboxserver.model.mongo.ClientDto;
@@ -16,10 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +32,36 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     @Autowired
     private ClientRegister clientRegister;
     private static final Logger logger = LoggerFactory.getLogger(ClientElasticRegisterImplTest.class);
+
+    @Test
+    public void createElasticClient() {
+        ClientToUpsert toUpsert = clientToUpsert();
+
+        //
+        //
+        String id = clientRegister.create(toUpsert);
+        //
+        //
+
+        // invoke exact consumer
+        kafkaProducerSimulator.push(ClientConsumer.class);
+
+        assertThat(id).isNotNull();
+
+        ClientsTableRequest tableRequest = new ClientsTableRequest();
+        tableRequest.full_name="Zh";
+
+        ClientResponse response = elasticRegister.load(tableRequest, Paging.defaultPaging());
+
+        assertThat(response.getClients()).hasSizeGreaterThan(0);
+
+        boolean contains = response.getClients().stream()
+                .map(clientElastic -> clientElastic.id)
+                .anyMatch(clientElasticId -> Objects.equals(clientElasticId, id));
+
+        assertThat(contains).isTrue();
+
+    }
 
     @Test
     public void getClientListCount(){
@@ -89,20 +119,6 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     }
 
 
-    @Test
-    public void asdfds(){
-        String uniqueTestingId = "sortFullNameAsc4";
-        ClientsTableRequest ctr = new ClientsTableRequest();
-        ctr.sorting = new HashMap<>();
-        ctr.sorting.put("full_name", true);
-        ctr.rndTestingId = "2";
-        //
-        //
-        ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
-        ClientResponse response = elasticRegister.loadAll(Paging.of(0, 10));
-
-        System.out.println(clientResponse);
-    }
     @Test
     public void sortFullNameAsc() {
         // Data prep

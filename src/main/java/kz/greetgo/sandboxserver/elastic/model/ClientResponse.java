@@ -10,6 +10,5 @@ import java.util.List;
 @Data
 public class ClientResponse {
     private List<ClientElastic> clients;
-    private int count;
-
+    private int total;
 }

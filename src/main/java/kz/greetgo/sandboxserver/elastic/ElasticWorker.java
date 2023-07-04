@@ -3,6 +3,7 @@ package kz.greetgo.sandboxserver.elastic;
 import kz.greetgo.sandboxserver.elastic.model.EsBodyWrapper;
 import kz.greetgo.sandboxserver.model.Paging;
 import kz.greetgo.sandboxserver.model.web.ClientsTableRequest;
+import kz.greetgo.sandboxserver.model.web.TableRequest;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 
@@ -14,11 +15,14 @@ public interface ElasticWorker {
 
   Response createIndex(String indexName, String mapping);
 
+  Response refresh(String indexName);
+
   boolean doesIndexExists(String indexName);
 
   EsBodyWrapper findAll(String indexName, Paging paging);
 
   EsBodyWrapper find(String indexName, ClientsTableRequest tableRequest, Paging paging);
+  EsBodyWrapper findModel(String indexName, Map<String,String> valueMap, Paging paging);
 
   Response insertDocument(String indexName, String documentId, String jsonifiedString);
 
@@ -26,5 +30,5 @@ public interface ElasticWorker {
 
   Response deleteDocument(String indexName, String documentId);
 
-    int getClientListAll(String indexClient);
+  int getClientListAll(String indexClient);
 }

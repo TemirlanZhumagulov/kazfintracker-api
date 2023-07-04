@@ -18,7 +18,10 @@ public class ClientToUpsert {
     private LocalDate birth_date;
     private Charm charm;
     private List<ClientAddress> addresses;
-    private List<ClientPhone> phones;
+    private String homePhone;
+    private String workPhone;
+    private String mobilePhone;
+    private List<String> phones;
     private ClientAccount account;
     private String rndTestingId;
     public ObjectId objectId() {
