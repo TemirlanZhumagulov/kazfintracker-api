@@ -92,8 +92,8 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     }
 
     @Test
-    public void testLoadAll(){
-        ClientResponse response = elasticRegister.loadAll(Paging.of(0,10));
+    public void testLoadAllTotalValue(){
+        ClientResponse response = elasticRegister.loadAll(Paging.defaultPaging());
         int initialCount = elasticRegister.getClientListCount();
         assertThat(response.getTotal()).isEqualTo(initialCount);
 
@@ -115,7 +115,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         kafkaProducerSimulator.push(ClientConsumer.class);
         //
         //
-        ClientResponse response2 = elasticRegister.loadAll(Paging.of(0,10));
+        ClientResponse response2 = elasticRegister.loadAll(Paging.defaultPaging());
         //
         //
         int afterInsertCount = elasticRegister.getClientListCount();
@@ -123,7 +123,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
 
         // Clear data inserted
         IntStream.range(0, ids.length).forEach(i -> clientRegister.delete(ids[i]));
-        ClientResponse response3 = elasticRegister.loadAll(Paging.of(0,10));
+        ClientResponse response3 = elasticRegister.loadAll(Paging.defaultPaging());
         int afterDeletingCount = elasticRegister.getClientListCount();
         assertThat(response3.getTotal()).isEqualTo(afterDeletingCount);
     }
@@ -556,7 +556,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         }
     }
     @Test
-    public void testLoadPaginationWithSorting() {
+    public void testPaginationWithSorting() {
         // Data prep
         String uniqueTestingId = "testLoadPagination4";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
@@ -596,7 +596,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     }
 
     @Test
-    public void testLoadPaginationWithFilter() {
+    public void testPaginationWithFilter() {
         // Data prep
         String uniqueName = "UNIQUE NAME";
         List<ClientToUpsert> clients = getTestClientsForFilter(uniqueName);
