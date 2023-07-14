@@ -24,8 +24,8 @@ public class ClientCrudController {
     }
 
     @PostMapping("/update")
-    public void update(@RequestBody ClientToUpsert client) {
-        clientRegister.update(client);
+    public String update(@RequestBody ClientToUpsert client) {
+        return clientRegister.update(client);
     }
 
     @PostMapping("/delete")

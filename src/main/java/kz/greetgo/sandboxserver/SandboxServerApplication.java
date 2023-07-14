@@ -61,7 +61,7 @@ public class SandboxServerApplication extends SpringBootServletInitializer imple
 
     @Override
     public void run(String... args) {
-        List<ClientToUpsert> clients = generateRandomClients(10); // Generate 10 random clients
+        List<ClientToUpsert> clients = generateRandomClients(100); // Generate 10 random clients
         for (ClientToUpsert client : clients) {
             clientRegister.create(client);
         }

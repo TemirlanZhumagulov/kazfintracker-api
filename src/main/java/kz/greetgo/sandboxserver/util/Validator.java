@@ -35,59 +35,59 @@ public class Validator {
     }
 
   }
-  public static void validate(ClientToUpsert client, boolean isCreate) {
+  public static String validate(ClientToUpsert client, boolean isCreate) {
     if (client == null) {
-      throw new IllegalArgumentException("client cannot be null");
+      return "Error: Client cannot be empty";
     }
-
     if (!isCreate && StrUtils.isNullOrBlank(client.getId())) {
-      throw new IllegalArgumentException("id cannot be null");
+      return "Error: id cannot be empty";
     }
 
     if (StrUtils.isNullOrBlank(client.getName())) {
-      throw new IllegalArgumentException("name cannot be null");
+      return "Error: Name cannot be empty";
     }
     if (StrUtils.isNullOrBlank(client.getSurname())) {
-      throw new IllegalArgumentException("surname cannot be null");
+      return "Error: Surname cannot be empty";
     }
     if (StrUtils.isNullOrBlank(client.getPatronymic())) {
-      throw new IllegalArgumentException("patronymic cannot be null");
+      return "Error: Patronymic cannot be empty";
     }
     if(client.getCharm() == null) {
-      throw new IllegalArgumentException("charm cannot be null");
+      return "Error: Charm cannot be empty";
     }
     if(client.getAccount() == null) {
-      throw new IllegalArgumentException("account cannot be null");
+      return "Error: Account data (total, min and max balance) cannot be empty";
     }
     if(client.getBirth_date() == null){
-      throw new IllegalArgumentException("birth_date cannot be null");
+      return "Error: Birth Date cannot be empty";
     }
     if(client.getAddresses() == null || client.getAddresses().isEmpty()){
-      throw new IllegalArgumentException("addresses cannot be null or empty");
+      return "Error: Addresses cannot be empty";
     }
     if(client.getHomePhone() == null){
-      throw new IllegalArgumentException("phones cannot be null or empty");
+      return "Error: Home Phone cannot be empty";
     }
     if(client.getWorkPhone() == null){
-      throw new IllegalArgumentException("phones cannot be null or empty");
+      return "Error: Work Phone cannot be empty";
     }
     if(client.getMobilePhone() == null){
-      throw new IllegalArgumentException("phones cannot be null or empty");
+      return "Error: Mobile Phone cannot be empty";
     }
     // business logic (birth_date, charm, addresses, phones etc)
     ClientAccount account = client.getAccount();
     if (account.getTotal_balance() < 0 || account.getTotal_balance() > 1_000_000_000) {
-      throw new IllegalArgumentException("Account Money is expected to be in range from 0 to 1 000 000 000");
+      return "Error: Account Money is expected to be in range from 0 to 1_000_000_000";
     }
     if (account.getMin_balance() < 0 || account.getMin_balance() > 1_000_000_000) {
-      throw new IllegalArgumentException("Account Minimum Balance is expected to be in range from 0 to 1 000 000 000");
+      return "Error: Account Minimum Balance is expected to be in range from 0 to 1_000_000_000";
     }
     if (account.getMax_balance() < 0 || account.getMax_balance() > 1_000_000_000) {
-      throw new IllegalArgumentException("Account Maximum Balance is expected to be in range from 0 to 1 000 000 000");
+      return "Error: Account Maximum Balance is expected to be in range from 0 to 1_000_000_000";
     }
     if(client.getBirth_date().isAfter(LocalDate.now()) || client.getBirth_date().isBefore(LocalDate.of(1900,1,1))) {
-      throw new IllegalArgumentException("birth_date cannot be after now or before 1900 year:" + client.getBirth_date());
+      return "Error: Birth Date cannot be after now or before 1900 year:" + client.getBirth_date();
     }
+    return null;
   }
 
 }

@@ -35,7 +35,8 @@ public class ClientRegisterImpl implements ClientRegister {
 
     @Override
     public String create(ClientToUpsert client) {
-        Validator.validate(client, true);
+        String error = Validator.validate(client, true);
+        if(error != null) return error;
         ClientDto dto = ClientDto.from(IdGenerator.generate(), client);
         mongoAccess.client().insertOne(dto);
         kafkaProducer.sendClient(ClientKafka.fromDto(dto, ChangeVariant.CREATE));
@@ -52,8 +53,9 @@ public class ClientRegisterImpl implements ClientRegister {
         return first.toRead();
     }
     @Override
-    public void update(ClientToUpsert client) {
-        Validator.validate(client, false);
+    public String update(ClientToUpsert client) {
+        String error = Validator.validate(client, false);
+        if(error != null) return error;
 
         List<Bson> updates = List.of(
                 Updates.set(ClientDto.Fields.name, client.getName()),
@@ -72,11 +74,11 @@ public class ClientRegisterImpl implements ClientRegister {
         ClientDto dto = mongoAccess.client().find(Filters.eq("_id", client.objectId())).first();
 
         if (dto == null) {
-            return;
+            return null;
         }
 
         kafkaProducer.sendClient(ClientKafka.fromDto(dto, ChangeVariant.UPDATE));
-
+        return dto.strId();
     }
 
 

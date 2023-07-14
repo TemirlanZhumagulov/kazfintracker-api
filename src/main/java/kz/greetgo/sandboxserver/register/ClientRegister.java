@@ -8,7 +8,7 @@ public interface ClientRegister {
 
     String create(ClientToUpsert client);
 
-    void update(ClientToUpsert client);
+    String update(ClientToUpsert client);
 
     void delete(String id);
 }

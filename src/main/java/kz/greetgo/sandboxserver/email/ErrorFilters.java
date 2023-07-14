@@ -4,7 +4,6 @@ import org.springframework.mail.MailException;
 
 public class ErrorFilters {
 
-    //<editor-fold desc="Mail">
     public static class MailExceptionFilters {
 
         private final MailException error;
@@ -33,9 +32,9 @@ public class ErrorFilters {
 
     }
 
+
     public static MailExceptionFilters mail(MailException e) {
         return new MailExceptionFilters(e);
     }
-    //</editor-fold>
 
 }

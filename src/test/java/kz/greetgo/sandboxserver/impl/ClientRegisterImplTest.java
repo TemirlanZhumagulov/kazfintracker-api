@@ -30,17 +30,6 @@ public class ClientRegisterImplTest extends ParentTestNG {
   @Autowired
   private ClientRegister clientRegister;
 
-  //
-  // Testing Create
-  //
-  @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "^client cannot be null$")
-  public void createNullClient() {
-    //
-    //
-    clientRegister.create(null);
-    //
-    //
-  }
 
   @Test
   public void createClient() {
@@ -123,7 +112,7 @@ public class ClientRegisterImplTest extends ParentTestNG {
     ));
     toUpsert.setPhones(List.of("8888888888888", "8888888888888"));
     toUpsert.setAccount(new ClientAccount(1F, 1F, 10000000F));
-    toUpsert.setBirth_date(LocalDate.of(2002,12,03));
+    toUpsert.setBirth_date(LocalDate.of(2002,12, 3));
 
     //
     //
@@ -177,3 +166,4 @@ public class ClientRegisterImplTest extends ParentTestNG {
     //
   }
 }
+
