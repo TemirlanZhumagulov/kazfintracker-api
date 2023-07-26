@@ -75,8 +75,12 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'junit', module: 'junit'
     }
-    testImplementation 'kz.greetgo.util:greetgo-util:1.0.3'
     // endregion test
+
+    // region migration utils
+    implementation 'org.apache.commons:commons-compress:1.21'
+    testImplementation 'kz.greetgo.util:greetgo-util:1.0.3'
+    // endregion migration utils
 
 }
 
