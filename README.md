@@ -11,7 +11,7 @@
 * database: sandbox_db
 * URL: jdbc:postgresql://localhost:12218/sandbox_db
 
-Во время миграции будет происходить
+Во время миграции будет происходить:
 1. разархивация файлов
 2. создание TMP таблицы
 3. загрузка данных в TMP
@@ -19,7 +19,9 @@
 5. создание Actual Tables
 6. Загрузка данных в Actual Tables
 7. Загрузка ошибок из TMP в лог файл
-8. Проверка на равное количество ошибок в лог файле и в TMP 
+
+Чтобы посмотреть лог файл с ошибками заходим в папку build/debug/database_errors_[date].csv
+* Количество записей можно узнать открыв файл через LibreOffice, не через Inellij IDEA
 
 Тесты находятся в папке kz/greetgo/sandboxserver/migration/
 
