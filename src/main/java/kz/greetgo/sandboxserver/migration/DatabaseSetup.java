@@ -7,7 +7,7 @@ import java.sql.Statement;
 
 public class DatabaseSetup {
     private final static String URL = "jdbc:postgresql://localhost:12218/sandbox_db";
-    private final static String USERNAME = "sandbox";
+    private final static String USERNAME = "postgres";
     private final static String PASSWORD = "pass123";
 
     public static Connection getConnection() throws Exception {

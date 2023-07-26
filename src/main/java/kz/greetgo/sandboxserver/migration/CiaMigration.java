@@ -250,39 +250,9 @@ public class CiaMigration implements Closeable {
                 offset += uploadMaxBatchSize;
             }
 
-            testUploadErrors();
         } catch (SQLException | IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void testUploadErrors() {
-        String filePath = "build/logs/" + logFileName;
-        int fileRowCount = 0;
-        int dbErrorRowCount = 0;
-
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            while (br.readLine() != null) {
-                fileRowCount++;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("File Count : " + fileRowCount);
-
-        try (Statement statement = operConnection.createStatement()) {
-            String sql = "SELECT count(*) FROM " + tmpClientTable + " WHERE status = 'ERROR'";
-            ResultSet resultSet = statement.executeQuery(sql);
-            if (resultSet.next()) {
-                dbErrorRowCount = resultSet.getInt(1);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        System.out.println("DB Count: " + dbErrorRowCount);
-
-        if (fileRowCount == dbErrorRowCount) System.out.println("Uploading errors to log finished successfully!");
-        else System.out.println("Uploading errors to log file failed!");
     }
 
 }

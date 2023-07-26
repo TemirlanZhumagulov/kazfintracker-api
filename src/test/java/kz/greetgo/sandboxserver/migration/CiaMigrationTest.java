@@ -46,7 +46,7 @@ public class CiaMigrationTest {
     }
 
     @Test
-    public void clientSurnameIsNotDefined() throws SQLException {
+    public void testClientSurnameIsNotDefined() throws SQLException {
         operConnection = DatabaseSetup.dropCreateTables("client_tmp", "phone_tmp");
         try {
             exec("INSERT INTO client_tmp (client_id, surname, name, patronymic, gender, charm, birth, fact_street, fact_house, fact_flat, register_street, register_house, register_flat, error, status) VALUES " +
@@ -71,7 +71,7 @@ public class CiaMigrationTest {
     }
 
     @Test
-    public void clientNameIsNotDefined() throws SQLException {
+    public void testClientNameIsNotDefined() throws SQLException {
         operConnection = DatabaseSetup.dropCreateTables("client_tmp", "phone_tmp");
         try {
             //language=Postgresql
@@ -97,7 +97,7 @@ public class CiaMigrationTest {
     }
 
     @Test
-    public void clientBirthDateIsNotDefined() throws SQLException {
+    public void testClientBirthDateIsNotDefined() throws SQLException {
         operConnection = DatabaseSetup.dropCreateTables("client_tmp", "phone_tmp");
         try {
             exec("INSERT INTO client_tmp (client_id, surname, name, patronymic, gender, charm, birth, fact_street, fact_house, fact_flat, register_street, register_house, register_flat, error, status) VALUES " +
@@ -123,7 +123,7 @@ public class CiaMigrationTest {
     }
 
     @Test
-    public void isBirthDateValid() throws SQLException {
+    public void testIsBirthDateValid() throws SQLException {
         operConnection = DatabaseSetup.dropCreateTables("client_tmp", "phone_tmp");
         try {
             // All

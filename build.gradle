@@ -82,10 +82,14 @@ dependencies {
     testImplementation 'kz.greetgo.util:greetgo-util:1.0.3'
     // endregion migration utils
 
+
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
 }
 
 test {
-    useTestNG()
+    useJUnitPlatform()
 }
 
 tasks.withType(Test) {
