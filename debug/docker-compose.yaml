@@ -16,7 +16,7 @@ services:
     restart: always
     mem_limit: 700M
     environment:
-      POSTGRES_PASSWORD: "iWAKOy4uS3v04T7bWM3SHNLiR8WyBP"
+      POSTGRES_PASSWORD: "pass123"
     ports:
       - "12218:5432"
     volumes:

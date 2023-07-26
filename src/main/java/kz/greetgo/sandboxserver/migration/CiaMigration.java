@@ -23,6 +23,7 @@ public class CiaMigration implements Closeable {
     public static String directoryForReading = "build/xml_files/";
     private static String tmpClientTable;
     private static String tmpPhoneTable;
+    private static String logFileName;
     private static Connection operConnection = null;
 
     @Override
@@ -209,7 +210,13 @@ public class CiaMigration implements Closeable {
     }
 
     private void uploadErrors() {
-        String filePath = "build/logs/database_errors.csv";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        Date nowDate = new Date();
+        logFileName = "database_errors_" + sdf.format(nowDate) + ".csv";
+        info("log file name = " + logFileName);
+
+
+        String filePath = "build/logs/" + logFileName;
         File file = new File(filePath);
         File parentDir = file.getParentFile();
         if (!parentDir.exists()) {
@@ -250,7 +257,7 @@ public class CiaMigration implements Closeable {
     }
 
     public void testUploadErrors() {
-        String filePath = "build/logs/database_errors.csv";
+        String filePath = "build/logs/" + logFileName;
         int fileRowCount = 0;
         int dbErrorRowCount = 0;
 
@@ -274,7 +281,7 @@ public class CiaMigration implements Closeable {
         }
         System.out.println("DB Count: " + dbErrorRowCount);
 
-        if (++fileRowCount == dbErrorRowCount) System.out.println("Uploading errors to log finished successfully!");
+        if (fileRowCount == dbErrorRowCount) System.out.println("Uploading errors to log finished successfully!");
         else System.out.println("Uploading errors to log file failed!");
     }
 
