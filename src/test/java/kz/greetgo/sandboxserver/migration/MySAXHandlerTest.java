@@ -1,7 +1,7 @@
 package kz.greetgo.sandboxserver.migration;
 
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.testng.annotations.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -20,21 +20,23 @@ public class MySAXHandlerTest {
         String insertClientSQL = "INSERT INTO client_tmp (client_id, surname, name, patronymic, gender, charm, birth, fact_street, fact_house, fact_flat, register_street, register_house, register_flat, error, status) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,'','JUST INSERTED')";
         String insertPhonesPS = "INSERT INTO phone_tmp (client_id, type, number) VALUES (?,?,?)";
-        try (Connection connection = DatabaseSetup.dropCreateTables("client_tmp", "phone_tmp");
-             PreparedStatement ciaPS = connection.prepareStatement(insertClientSQL);
-             PreparedStatement phonesPS = connection.prepareStatement(insertPhonesPS)) {
-            long startedAt = System.nanoTime();
-            int recordsCount = 0;
+        try (Connection connection = DatabaseSetup.dropCreateTables("client_tmp", "phone_tmp")) {
+            assert connection != null;
+            try (PreparedStatement ciaPS = connection.prepareStatement(insertClientSQL);
+                 PreparedStatement phonesPS = connection.prepareStatement(insertPhonesPS)) {
+                long startedAt = System.nanoTime();
+                int recordsCount = 0;
 
-            MySAXHandler saxHandler = new MySAXHandler(connection, ciaPS, phonesPS, startedAt, recordsCount);
+                MySAXHandler saxHandler = new MySAXHandler(connection, ciaPS, phonesPS, startedAt, recordsCount);
 
-            connection.setAutoCommit(false);
+                connection.setAutoCommit(false);
 
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            SAXParser saxParser = factory.newSAXParser();
-            InputSource inputSource = new InputSource(new StringReader(xmlString));
-            saxParser.parse(inputSource, saxHandler);
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                SAXParser saxParser = factory.newSAXParser();
+                InputSource inputSource = new InputSource(new StringReader(xmlString));
+                saxParser.parse(inputSource, saxHandler);
 
+            }
         } catch (IOException | SQLException | ParserConfigurationException e) {
             e.printStackTrace();
         }
@@ -413,17 +415,19 @@ public class MySAXHandlerTest {
             e.printStackTrace();
         }
 
-        try (Connection operConnection = DatabaseSetup.dropCreateTables("client_tmp", "phone_tmp");
-             Statement statement = operConnection.createStatement()) {
-            //language=PostgreSQL
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM client_tmp WHERE client_id = '3-ZAC-43-PF-GNsIekwnHR'");
-            while (resultSet.next()) {
-                Assertions.assertThat(resultSet).isNull();
-            }
-            ResultSet resultSet2 = statement.executeQuery("SELECT * FROM client_tmp WHERE client_id = '1-IP3-43-PF-GNsIekwnHR'");
-            while (resultSet2.next()) {
-                String name = resultSet2.getString("name");
-                Assertions.assertThat(name).isNull();
+        try (Connection operConnection = DatabaseSetup.dropCreateTables("client_tmp", "phone_tmp")) {
+            assert operConnection != null;
+            try (Statement statement = operConnection.createStatement()) {
+                //language=PostgreSQL
+                ResultSet resultSet = statement.executeQuery("SELECT * FROM client_tmp WHERE client_id = '3-ZAC-43-PF-GNsIekwnHR'");
+                while (resultSet.next()) {
+                    Assertions.assertThat(resultSet).isNull();
+                }
+                ResultSet resultSet2 = statement.executeQuery("SELECT * FROM client_tmp WHERE client_id = '1-IP3-43-PF-GNsIekwnHR'");
+                while (resultSet2.next()) {
+                    String name = resultSet2.getString("name");
+                    Assertions.assertThat(name).isNull();
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

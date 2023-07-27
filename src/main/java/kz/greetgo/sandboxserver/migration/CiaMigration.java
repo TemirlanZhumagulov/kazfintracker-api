@@ -21,10 +21,9 @@ public class CiaMigration implements Closeable {
     public static int uploadMaxBatchSize = 50_000;
     public static String directoryForUnzipping = GenerateInputFiles.DIR;
     public static String directoryForReading = "build/xml_files/";
-    private static String tmpClientTable;
-    private static String tmpPhoneTable;
-    private static String logFileName;
     private static Connection operConnection = null;
+    private String tmpClientTable;
+    private String tmpPhoneTable;
 
     @Override
     public void close() {
@@ -70,6 +69,12 @@ public class CiaMigration implements Closeable {
     private void uncompressFiles() {
         File directory = new File(directoryForUnzipping);
         File[] files = directory.listFiles((dir, name) -> name.endsWith("xml.tar.bz2"));
+
+        if(files == null) {
+            System.out.println("No XML files found in the directory.");
+            return;
+        }
+
         try {
             File outputDir = new File(directoryForReading);
             if (!directory.exists()) {
@@ -126,6 +131,10 @@ public class CiaMigration implements Closeable {
 
         operConnection = DatabaseSetup.dropCreateTables(tmpClientTable, tmpPhoneTable);
 
+        if(operConnection == null) {
+            info("CONNECTION NOT RECEIVED");
+            return;
+        }
 
         String insertClientSQL = "INSERT INTO " + tmpClientTable + " (client_id, surname, name, patronymic, gender, charm, birth, fact_street, fact_house, fact_flat, register_street, register_house, register_flat, error, status) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,'','JUST INSERTED')";
@@ -155,13 +164,13 @@ public class CiaMigration implements Closeable {
         try {
             //language=PostgreSQL
             exec("UPDATE " + tmpClientTable + " SET error = 'surname is not defined', status='ERROR' " +
-                    "WHERE error = '' and (surname is null or surname = '')"); // TO DO ADD TRIM()
+                    "WHERE error = '' and (surname is null or surname = '')");
             //language=PostgreSQL
             exec("UPDATE " + tmpClientTable + " SET error = 'name is not defined', status='ERROR' " +
-                    "WHERE error = '' and (name is null or name = '')"); // TO DO ADD TRIM()
+                    "WHERE error = '' and (name is null or name = '')");
             //language=PostgreSQL
             exec("UPDATE " + tmpClientTable + " SET error = 'birth_date is not defined', status='ERROR' " +
-                    "WHERE error = '' and (birth is null or birth = '')"); // TO DO ADD TRIM()
+                    "WHERE error = '' and (birth is null or birth = '')");
             //language=PostgreSQL
             exec("UPDATE " + tmpClientTable + " SET error = 'birth_date is not correct', status='ERROR'" +
                     "WHERE error = '' and NOT birth ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$';");
@@ -212,7 +221,7 @@ public class CiaMigration implements Closeable {
     private void uploadErrors() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
         Date nowDate = new Date();
-        logFileName = "database_errors_" + sdf.format(nowDate) + ".csv";
+        String logFileName = "database_errors_" + sdf.format(nowDate) + ".csv";
         info("log file name = " + logFileName);
 
 
