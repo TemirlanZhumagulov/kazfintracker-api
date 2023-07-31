@@ -1,44 +1,49 @@
 package kz.greetgo.sandboxserver.migration;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import static kz.greetgo.sandboxserver.migration.CiaMigration.downloadMaxBatchSize;
 import static kz.greetgo.sandboxserver.migration.util.TimeUtils.recordsPerSecond;
 import static kz.greetgo.sandboxserver.migration.util.TimeUtils.showTime;
 
 public class MySAXHandler extends DefaultHandler {
+    public final PreparedStatement ciaPS;
+    public final PreparedStatement phonesPS;
+    public final Connection operConnection;
+    public long startedAt;
+    private int batchSize = 0;
+    private int phonesBatchSize = 0;
+    private OutputStream outputErrors;
+    private int recordsCount;
     private StringBuilder currentValue;
     private Client currentClient;
-    private final PreparedStatement ciaPS;
-    private final PreparedStatement phonesPS;
-    private final Connection operConnection;
-    long startedAt;
-    private int batchSize;
-    private int phonesBatchSize;
-    private int recordsCount;
-    private BufferedWriter fatalErrorsWriter;
-    private boolean insideNestedClient = false;
+    private boolean insidePhoneTag = false;
 
-    public MySAXHandler(Connection operConnection, PreparedStatement ciaPS, PreparedStatement phonesPS, long startedAt, int recordsCount) {
+    private final Stack<String> elementStack = new Stack<>();
+    private final StringBuilder path = new StringBuilder();
+
+    public MySAXHandler(Connection operConnection, PreparedStatement ciaPS, PreparedStatement phonesPS) {
         this.operConnection = operConnection;
         this.ciaPS = ciaPS;
         this.phonesPS = phonesPS;
-        this.startedAt = startedAt;
-        this.recordsCount = recordsCount;
-        this.batchSize = 0;
-        this.phonesBatchSize = 0;
+        this.recordsCount = 0;
     }
 
     static class Client {
@@ -60,37 +65,62 @@ public class MySAXHandler extends DefaultHandler {
         String homePhone;
     }
 
+    public void parse(InputStream inputStream, OutputStream outputStream) {
+        try {
+            this.outputErrors = outputStream;
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            SAXParser saxParser = factory.newSAXParser();
+            saxParser.parse(inputStream, this);
+        } catch (SAXException | IOException | ParserConfigurationException ignored) {
+
+        }
+    }
     @Override
     public void startDocument() {
-        File file = new File("build/logs/fatal_errors.txt");
-        File parentDir = file.getParentFile();
-        if (!parentDir.exists()) {
-            parentDir.mkdirs();
-        }
-        try {
-            fatalErrorsWriter = new BufferedWriter(new FileWriter(file));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        File file = new File("build/logs/" + errorFileName);
+//        File parentDir = file.getParentFile();
+//        if (!parentDir.exists()) {
+//            parentDir.mkdirs();
+//        }
+//        try {
+//            fatalErrorsWriter = new BufferedWriter(new FileWriter(file));
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) {
-        currentValue = new StringBuilder();
-        if (qName.equals("client")) {
-            if (currentClient == null) {
-                currentClient = new Client();
-                currentClient.id = attributes.getValue("id");
-                currentClient.mobilePhones = new ArrayList<>();
-                currentClient.workPhones = new ArrayList<>();
-            } else {
-                insideNestedClient = true;
+        if (qName.equals("client") && path.toString().equals("cia/")) {
+            currentClient = new Client();
+            currentClient.id = attributes.getValue("id");
+            currentClient.mobilePhones = new ArrayList<>();
+            currentClient.workPhones = new ArrayList<>();
+        } else if (attributes.getLength() > 0 && (qName.equals("name") || qName.equals("surname") || qName.equals("patronymic") || qName.equals("gender") || qName.equals("charm") || qName.equals("birth") || qName.equals("homePhone")) && path.toString().equals("cia/client/")) {
+            switch (qName) {
+                case "surname":
+                    currentClient.surname = attributes.getValue("value");
+                    break;
+                case "name":
+                    currentClient.name = attributes.getValue("value");
+                    break;
+                case "patronymic":
+                    currentClient.patronymic = attributes.getValue("value");
+                    break;
+                case "gender":
+                    currentClient.gender = attributes.getValue("value");
+                    break;
+                case "charm":
+                    currentClient.charm = attributes.getValue("value");
+                    break;
+                case "birth":
+                    currentClient.birth = attributes.getValue("value");
+                    break;
+                case "homePhone":
+                    currentClient.homePhone = attributes.getValue("value");
+                    break;
             }
-        } else if (attributes.getLength() > 0 && (qName.equals("name") || qName.equals("surname") ||
-                qName.equals("patronymic") || qName.equals("gender") || qName.equals("charm") ||
-                qName.equals("birth") || qName.equals("homePhone"))) {
-            currentValue.append(attributes.getValue("value"));
-        } else if (qName.equals("fact") || qName.equals("register")) {
+        } else if ((qName.equals("fact") || qName.equals("register")) && path.toString().equals("cia/client/address/")) {
             String street = attributes.getValue("street");
             String house = attributes.getValue("house");
             String flat = attributes.getValue("flat");
@@ -104,50 +134,42 @@ public class MySAXHandler extends DefaultHandler {
                 currentClient.registerHouse = house;
                 currentClient.registerFlat = flat;
             }
+        } else if ((qName.equals("homePhone") || qName.equals("workPhone") || qName.equals("mobilePhone")) && path.toString().equals("cia/client/")) {
+            currentValue = new StringBuilder();
+        }
+        elementStack.push(qName);
+        buildPath();
+    }
+
+    private void buildPath() {
+        path.setLength(0);
+        for (String s : elementStack) {
+            path.append(s).append("/");
         }
     }
 
     @Override
     public void characters(char[] ch, int start, int length) {
-        String text = new String(ch, start, length).trim();
-        currentValue.append(text);
+        if (path.toString().equals("cia/client/workPhone/") || path.toString().equals("cia/client/homePhone/") || path.toString().equals("cia/client/mobilePhone/")) {
+            insidePhoneTag = true;
+            String text = new String(ch, start, length).trim();
+            currentValue.append(text);
+        } else {
+            insidePhoneTag = false;
+        }
     }
 
     @Override
     public void endElement(String uri, String localName, String qName) {
-        if (qName.equals("client")) {
-            if (!insideNestedClient) {
-                try {
-                    insertRecordToBatch(currentClient);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-                currentClient = null;
+        if (qName.equals("client") && path.toString().equals("cia/client/")) {
+            try {
+                insertRecordToBatch(currentClient);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-            insideNestedClient = false;
-        } else if (currentClient != null && !insideNestedClient) {
+            currentClient = null;
+        } else if (currentClient != null && insidePhoneTag) {
             switch (qName) {
-                case "surname":
-                    currentClient.surname = currentValue.toString();
-                    break;
-                case "name":
-                    currentClient.name = currentValue.toString();
-                    break;
-                case "patronymic":
-                    currentClient.patronymic = currentValue.toString();
-                    break;
-                case "gender":
-                    currentClient.gender = currentValue.toString();
-                    break;
-                case "charm":
-                    currentClient.charm = currentValue.toString();
-                    break;
-                case "birth":
-                    currentClient.birth = currentValue.toString();
-                    break;
-                case "homePhone":
-                    currentClient.homePhone = currentValue.toString();
-                    break;
                 case "mobilePhone":
                     currentClient.mobilePhones.add(currentValue.toString());
                     break;
@@ -155,8 +177,10 @@ public class MySAXHandler extends DefaultHandler {
                     currentClient.workPhones.add(currentValue.toString());
                     break;
             }
+            insidePhoneTag = false;
         }
-        currentValue.setLength(0);
+        elementStack.pop();
+        buildPath();
     }
 
     private void addPhones(String type, String value) {
@@ -195,7 +219,9 @@ public class MySAXHandler extends DefaultHandler {
         batchSize++;
         recordsCount++;
 
-        if(client.homePhone != null) addPhones("HOME", client.homePhone);
+        if (client.homePhone != null) {
+            addPhones("HOME", client.homePhone);
+        }
         for (int i = 0; i < client.workPhones.size(); i++) {
             addPhones("WORK", client.workPhones.get(i));
         }
@@ -208,19 +234,18 @@ public class MySAXHandler extends DefaultHandler {
             operConnection.commit();
             batchSize = 0;
             long now = System.nanoTime();
-            System.out.println(" -- downloaded records " + recordsCount + " for " + showTime(now, startedAt)
-                    + " : " + recordsPerSecond(recordsCount, now - startedAt));
+            System.out.println(" -- downloaded records " + recordsCount + " for " + showTime(now, startedAt) + " : " + recordsPerSecond(recordsCount, now - startedAt));
         }
 
     }
 
     @Override
     public void endDocument() {
-        try {
-            fatalErrorsWriter.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            fatalErrorsWriter.close();
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
         loadData();
     }
 
@@ -237,12 +262,10 @@ public class MySAXHandler extends DefaultHandler {
                 operConnection.commit();
             }
             long now = System.nanoTime();
-            System.out.println(" -- downloaded records " + recordsCount + " for " + showTime(now, startedAt)
-                    + " : " + recordsPerSecond(recordsCount, now - startedAt));
+            System.out.println(" -- downloaded records " + recordsCount + " for " + showTime(now, startedAt) + " : " + recordsPerSecond(recordsCount, now - startedAt));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     @Override
@@ -265,9 +288,10 @@ public class MySAXHandler extends DefaultHandler {
         String logMessage = "[" + severity + "] " + errorLocation + errorMessage + "\n";
 
         try {
-            fatalErrorsWriter.write(logMessage);
-            fatalErrorsWriter.flush();
-            fatalErrorsWriter.close();
+            outputErrors.write(logMessage.getBytes(StandardCharsets.UTF_8));
+//            fatalErrorsWriter.write(logMessage);
+//            fatalErrorsWriter.flush();
+//            fatalErrorsWriter.close();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

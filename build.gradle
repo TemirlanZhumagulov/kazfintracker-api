@@ -60,10 +60,6 @@ dependencies {
     implementation 'kz.greetgo.conf:greetgo.conf:2.0.3'
     implementation 'kz.greetgo:greetgo.email:1.0.7'
     implementation 'org.springframework.boot:spring-boot-starter-mail:1.2.0.RELEASE'
-
-
-    //    implementation 'kz.greetgo:greetgo.email:0.0.10'
-    //    implementation 'com.github.greetgo:greetgo.email:1.0.5'
     // endregion email
 
     // region postgre
@@ -83,6 +79,15 @@ dependencies {
     testImplementation 'kz.greetgo.util:greetgo-util:1.0.3'
     // endregion migration utils
 
+    // region logger
+    implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
+    // endregion logger
+
+    // region lombok
+    compileOnly 'org.projectlombok:lombok:1.18.28'
+    annotationProcessor 'org.projectlombok:lombok:1.18.28'
+    // endregion lombok
 }
 
 test {

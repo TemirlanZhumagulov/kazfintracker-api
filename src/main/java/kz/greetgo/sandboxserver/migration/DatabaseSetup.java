@@ -10,113 +10,110 @@ public class DatabaseSetup {
     private final static String USERNAME = "postgres";
     private final static String PASSWORD = "pass123";
 
-    public static Connection getConnection() throws Exception {
-        Class.forName("org.postgresql.Driver");
-        return DriverManager.getConnection(URL, USERNAME, PASSWORD);
-    }
-
-    public static Connection dropCreateActualTables() {
+    public static Connection getConnection() {
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
-        Connection connection;
         try {
-            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-            dropActualTables(connection);
-            createActualTables(connection);
-            System.out.println("Actual Tables recreated");
-            return connection;
+            return DriverManager.getConnection(URL, USERNAME, PASSWORD);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void createActualTables() {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        try (Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
+
+            String createCharmTable = "CREATE TABLE IF NOT EXISTS charm (" +
+                    "id SERIAL PRIMARY KEY," +
+                    "name VARCHAR(50) UNIQUE" +
+                    ")";
+
+            String createClientTable = "CREATE TABLE IF NOT EXISTS client (" +
+                    "id VARCHAR(50) PRIMARY KEY," +
+                    "surname VARCHAR(50) NOT NULL," +
+                    "name VARCHAR(50) NOT NULL," +
+                    "patronymic VARCHAR(50)," +
+                    "gender VARCHAR(10)," +
+                    "birth_date DATE," +
+                    "charm_id INT," +
+                    "FOREIGN KEY (charm_id) REFERENCES charm(id)" +
+                    ")";
+
+            String createClientAddrTable = "CREATE TABLE IF NOT EXISTS client_addr (" +
+                    "client VARCHAR(50)," +
+                    "type VARCHAR(10)," +
+                    "street VARCHAR(50)," +
+                    "house VARCHAR(50)," +
+                    "flat VARCHAR(50)," +
+                    "FOREIGN KEY (client) REFERENCES client(id)," +
+                    "CONSTRAINT unique_client_type_combination UNIQUE (client, type)" +
+                    ")";
+
+            String createClientPhoneTable = "CREATE TABLE IF NOT EXISTS client_phone (" +
+                    "client VARCHAR(50)," +
+                    "number VARCHAR(50)," +
+                    "type VARCHAR(10)," +
+                    "FOREIGN KEY (client) REFERENCES client(id)," +
+                    "CONSTRAINT unique_client_type_number_combination UNIQUE (client, type, number)" +
+                    ")";
+
+            try (Statement statement = connection.createStatement()) {
+                statement.executeUpdate(createCharmTable);
+                statement.executeUpdate(createClientTable);
+                statement.executeUpdate(createClientAddrTable);
+                statement.executeUpdate(createClientPhoneTable);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
-    private static void dropActualTables(Connection connection) {
-        try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate("DROP TABLE IF EXISTS client_phone");
+    public static void dropActualTables() {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        try (Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
 
-            statement.executeUpdate("DROP TABLE IF EXISTS client_addr");
+            try (Statement statement = connection.createStatement()) {
+                statement.executeUpdate("DROP TABLE IF EXISTS client_phone");
 
-            statement.executeUpdate("DROP TABLE IF EXISTS client");
+                statement.executeUpdate("DROP TABLE IF EXISTS client_addr");
 
-            statement.executeUpdate("DROP TABLE IF EXISTS charm");
+                statement.executeUpdate("DROP TABLE IF EXISTS client");
+
+                statement.executeUpdate("DROP TABLE IF EXISTS charm");
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
-    private static void createActualTables(Connection connection) {
-        String createCharmTable = "CREATE TABLE charm (" +
-                "id SERIAL PRIMARY KEY," +
-                "name VARCHAR(50) UNIQUE" +
-                ")";
 
-        String createClientTable = "CREATE TABLE client (" +
-                "id VARCHAR(50) PRIMARY KEY," +
-                "surname VARCHAR(50) NOT NULL," +
-                "name VARCHAR(50) NOT NULL," +
-                "patronymic VARCHAR(50)," +
-                "gender VARCHAR(10)," +
-                "birth_date DATE," +
-                "charm_id INT," +
-                "FOREIGN KEY (charm_id) REFERENCES charm(id)" +
-                ")";
-
-        String createClientAddrTable = "CREATE TABLE client_addr (" +
-                "client VARCHAR(50)," +
-                "type VARCHAR(10)," +
-                "street VARCHAR(50)," +
-                "house VARCHAR(50)," +
-                "flat VARCHAR(50)," +
-                "FOREIGN KEY (client) REFERENCES client(id)" +
-                ")";
-
-        String createClientPhoneTable = "CREATE TABLE client_phone (" +
-                "client VARCHAR(50)," +
-                "number VARCHAR(50)," +
-                "type VARCHAR(10)," +
-                "FOREIGN KEY (client) REFERENCES client(id)" +
-                ")";
-
-        String addConstraintUnique = "ALTER TABLE client_addr " +
-                "ADD CONSTRAINT unique_client_type_combination UNIQUE (client, type)";
-
-        try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate(createCharmTable);
-            statement.executeUpdate(createClientTable);
-            statement.executeUpdate(createClientAddrTable);
-            statement.executeUpdate(createClientPhoneTable);
-            statement.executeUpdate(addConstraintUnique);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    public static Connection dropCreateTables(String tmpClient, String tmpPhone) {
+    public static void dropCreateTables(String tmpClient, String tmpPhone) {
         try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException("56U13Z7smM :: ", e);
         }
         Connection connection;
         try {
             connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
             dropTables(connection);
             createTables(connection, tmpClient, tmpPhone);
-            System.out.println("TMP tables created successfully.");
-            return connection;
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
     private static void dropTables(Connection connection) throws SQLException {
@@ -129,7 +126,8 @@ public class DatabaseSetup {
         }
     }
 
-    private static void createTables(Connection connection, String tmpClientTable, String tmpPhoneTable) throws SQLException {
+    private static void createTables(Connection connection, String tmpClientTable, String tmpPhoneTable) throws
+            SQLException {
         String createClientTableSQL = "CREATE TABLE " + tmpClientTable + " ("
                 + "id SERIAL PRIMARY KEY,"
                 + "client_id VARCHAR(50),"
@@ -150,6 +148,7 @@ public class DatabaseSetup {
                 + ")";
 
         String createMobilePhoneTableSQL = "CREATE TABLE " + tmpPhoneTable + " ("
+                + "id SERIAL PRIMARY KEY,"
                 + "client_id VARCHAR(50),"
                 + "type VARCHAR(10),"
                 + "number VARCHAR(50)"

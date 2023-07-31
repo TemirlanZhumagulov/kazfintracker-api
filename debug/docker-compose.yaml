@@ -14,9 +14,10 @@ services:
     image: postgres:13.4
     container_name: sandbox-pg
     restart: always
-    mem_limit: 700M
+    mem_limit: 8G
     environment:
       POSTGRES_PASSWORD: "pass123"
+      POSTGRES_INITDB_ARGS: "-c work_mem=1GB -c maintenance_work_mem=4GB -c max_connections=50 "
     ports:
       - "12218:5432"
     volumes:
