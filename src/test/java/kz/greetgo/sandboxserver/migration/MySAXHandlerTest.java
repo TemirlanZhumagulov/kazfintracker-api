@@ -1,5 +1,6 @@
 package kz.greetgo.sandboxserver.migration;
 
+import kz.greetgo.sandboxserver.DatabaseAccess;
 import org.assertj.core.api.Assertions;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -18,6 +19,8 @@ public class MySAXHandlerTest {
     private Connection connection;
     private PreparedStatement ciaPS;
     private PreparedStatement phonesPS;
+
+    private DatabaseAccess dbAccess;
 
     private String tmpClientTable;
     private String tmpPhoneTable;
@@ -47,15 +50,14 @@ public class MySAXHandlerTest {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+        // Create dbAccess
+        dbAccess = new DatabaseAccess(connection);
     }
 
     @AfterMethod
     public void tearDown() {
         try {
-            if (connection != null) {
-                connection.close();
-                connection = null;
-            }
             if(ciaPS != null){
                 ciaPS.close();
                 ciaPS = null;
@@ -63,6 +65,10 @@ public class MySAXHandlerTest {
             if(phonesPS != null){
                 phonesPS.close();
                 phonesPS = null;
+            }
+            if (connection != null) {
+                connection.close();
+                connection = null;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -86,21 +92,24 @@ public class MySAXHandlerTest {
 
     @Test
     public void parse___ShouldLoad_XMLClientData_ToTmpClientTable() throws SQLException {
-        String str = "<cia><client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
-                "<surname value=\"s\"/>" +
-                "<birth value=\"12-12-2002\"/>" +
-                "<name value=\"n\"/>" +
-                "<address>" +
-                "<fact street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
-                "<register street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
-                "</address>" +
-                "<gender value=\"FEMALE\"/>" +
-                "<workPhone>+7-165-867-45-80</workPhone>" +
-                "<mobilePhone>+7-718-096-63-80 вн. Y2RH</mobilePhone>" +
-                "<homePhone value=\"+7-718-096-63-20\"/>" +
-                "<charm value=\"4S7UG5gvok\"/>" +
-                "<patronymic value=\"sn7FcW6YHyhRo\"/>" +
-                "</client></cia>";
+        String str = "" +
+                "<cia>" +
+                "   <client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
+                "       <surname value=\"s\"/>" +
+                "       <birth value=\"12-12-2002\"/>" +
+                "       <name value=\"n\"/>" +
+                "       <address>" +
+                "           <fact street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
+                "           <register street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
+                "       </address>" +
+                "       <gender value=\"FEMALE\"/>" +
+                "       <workPhone>+7-165-867-45-80</workPhone>" +
+                "       <mobilePhone>+7-718-096-63-80 вн. Y2RH</mobilePhone>" +
+                "       <homePhone value=\"+7-718-096-63-20\"/>" +
+                "       <charm value=\"4S7UG5gvok\"/>" +
+                "       <patronymic value=\"sn7FcW6YHyhRo\"/>" +
+                "   </client>" +
+                "</cia>";
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
 
         MySAXHandler mySAXHandler = new MySAXHandler(connection, ciaPS, phonesPS);
@@ -149,21 +158,24 @@ public class MySAXHandlerTest {
     }
     @Test
     public void parse___ShouldLoad_XMLClientPhones_ToTmpPhoneTable() {
-        String str = "<cia><client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
-                "<surname value=\"s\"/>" +
-                "<birth value=\"12-12-2002\"/>" +
-                "<name value=\"n\"/>" +
-                "<address>" +
-                "<fact street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
-                "<register street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
-                "</address>" +
-                "<gender value=\"FEMALE\"/>" +
-                "<workPhone>+7-165-867-45-80</workPhone>" +
-                "<mobilePhone>+7-718-096-63-80 вн. Y2RH</mobilePhone>" +
-                "<homePhone value=\"+7-718-096-63-20\"/>" +
-                "<charm value=\"4S7UG5gvok\"/>" +
-                "<patronymic value=\"sn7FcW6YHyhRo\"/>" +
-                "</client></cia>";
+        String str = "" +
+                "<cia>" +
+                "   <client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
+                "       <surname value=\"s\"/>" +
+                "       <birth value=\"12-12-2002\"/>" +
+                "       <name value=\"n\"/>" +
+                "       <address>" +
+                "           <fact street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
+                "           <register street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
+                "       </address>" +
+                "       <gender value=\"FEMALE\"/>" +
+                "       <workPhone>+7-165-867-45-80</workPhone>" +
+                "       <mobilePhone>+7-718-096-63-80 вн. Y2RH</mobilePhone>" +
+                "       <homePhone value=\"+7-718-096-63-20\"/>" +
+                "       <charm value=\"4S7UG5gvok\"/>" +
+                "       <patronymic value=\"sn7FcW6YHyhRo\"/>" +
+                "   </client>" +
+                "</cia>";
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
 
         MySAXHandler mySAXHandler = new MySAXHandler(connection, ciaPS, phonesPS);
@@ -181,21 +193,25 @@ public class MySAXHandlerTest {
 
     @Test
     public void parse___ShouldLogError_When_MobilePhoneWithoutMatchingEndTag() {
-        String str = "<cia><client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
-                "<surname value=\"s\"/>" +
-                "<birth value=\"12-12-2002\"/>" +
-                "<name value=\"n\"/>" +
-                "<address>" +
-                "<fact street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
-                "<register street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
-                "</address>" +
-                "<gender value=\"FEMALE\"/>" +
-                "<workPhone>+7-165-867-45-80</workPhone>" +
-                "<mobilePhone>+7-718-096-63-80 вн. Y2RH" + // Without closing mobile phone tag
-                "<homePhone value=\"+7-718-096-63-20\"/>" +
-                "<charm value=\"4S7UG5gvok\"/>" +
-                "<patronymic value=\"sn7FcW6YHyhRo\"/>" +
-                "</client></cia>";
+        String str = "" +
+                "<cia>" +
+                "   <client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
+                "       <surname value=\"s\"/>" +
+                "       <birth value=\"12-12-2002\"/>" +
+                "       <name value=\"n\"/>" +
+                "       <address>" +
+                "           <fact street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
+                "           <register street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
+                "       </address>" +
+                "       <gender value=\"FEMALE\"/>" +
+                "       <workPhone>+7-165-867-45-80</workPhone>" +
+                "       <mobilePhone>+7-718-096-63-80 вн. Y2RH" + // Without closing mobile phone tag
+                "       <homePhone value=\"+7-718-096-63-20\"/>" +
+                "       <charm value=\"4S7UG5gvok\"/>" +
+                "       <patronymic value=\"sn7FcW6YHyhRo\"/>" +
+                "   </client>" +
+                "</cia>";
+
         ByteArrayInputStream inputData = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
         ByteArrayOutputStream outputErrors = new ByteArrayOutputStream();
         MySAXHandler mySAXHandler = new MySAXHandler(connection, ciaPS, phonesPS);
@@ -213,22 +229,24 @@ public class MySAXHandlerTest {
 
     @Test
     public void parse___shouldLogError_When_NotWellFormedDocument() {
-        String str = "<<client id=\"1-IP3-43-PF-GNsIekwnHR\">>\n" + // HERE
-                        "   <birth value=\"15-12-2002\"/>\n" +
-                        "   <address mine=\"asd\">\n" +
-                        "       <fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>\n" +
-                        "       <register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>\n" +
-                        "   </address>\n" +
-                        "   <workPhone mine=\"asd\">+7-606-415-31-26</workPhone>\n" +
-                        "   <mobilePhone mine=\"asd\">+7-718-096-63-80 вн. Y2RH\n</mobilePhone>" +
-                        "   <gender value=\"FEMALE\"/>\n" +
-                        "   <surname value=\"Gh9g8EvSVo\"/>\n" +
-                        "   <name value=\"Azx1qg8EvSVo\"/>\n" +
-                        "   <charm value=\"4S7UG5gvok\"/>\n" +
-                        "   <workPhone>+7-165-867-45-80</workPhone>\n" +
-                        "   <mobilePhone>+7-903-297-09-92</mobilePhone>\n" +
-                        "   <patronymic value=\"sn7FcW6YHyhRo\"/>\n" +
-                        "</client>";
+        String str = "" +
+                "<cia>" +
+                "   <<client id=\"1-IP3-43-PF-GNsIekwnHR\">>" + // Here
+                "       <surname value=\"s\"/>" +
+                "       <birth value=\"12-12-2002\"/>" +
+                "       <name value=\"n\"/>" +
+                "       <address>" +
+                "           <fact street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
+                "           <register street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
+                "       </address>" +
+                "       <gender value=\"FEMALE\"/>" +
+                "       <workPhone>+7-165-867-45-80</workPhone>" +
+                "       <mobilePhone>+7-718-096-63-80 вн. Y2RH" +
+                "       <homePhone value=\"+7-718-096-63-20\"/>" +
+                "       <charm value=\"4S7UG5gvok\"/>" +
+                "       <patronymic value=\"sn7FcW6YHyhRo\"/>" +
+                "   </client>" +
+                "</cia>";
 
         ByteArrayInputStream inputData = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
         ByteArrayOutputStream outputErrors = new ByteArrayOutputStream();
@@ -246,22 +264,24 @@ public class MySAXHandlerTest {
 
     @Test
     public void parse___ShouldLogError_When_ClientIdQuoteIsNotClosed() {
-        String str = "<client id=\"1-IP3-43-PF-GNsIekwnHR>" + // HERE
-                        "   <birth value=\"15-12-2002\"/>" +
-                        "   <address mine=\"asd\">" +
-                        "       <fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
-                        "       <register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
-                        "   </address>" +
-                        "   <workPhone mine=\"asd\">+7-606-415-31-26</workPhone>" +
-                        "   <mobilePhone mine=\"asd\">+7-718-096-63-80 вн. Y2RH" +
-                        "   <gender value=\"FEMALE\"/>" +
-                        "   <surname value=\"Gh9g8EvSVo\"/>" +
-                        "   <name value=\"Azx1qg8EvSVo\"/>" +
-                        "   <charm value=\"4S7UG5gvok\"/>" +
-                        "   <workPhone>+7-165-867-45-80</workPhone>" +
-                        "   <mobilePhone>+7-903-297-09-92</mobilePhone>" +
-                        "   <patronymic value=\"sn7FcW6YHyhRo\"/>" +
-                        "</client>";
+        String str = "" +
+                "<cia>" +
+                "   <client id=\"1-IP3-43-PF-GNsIekwnHR>" + // Here
+                "       <surname value=\"s\"/>" +
+                "       <birth value=\"12-12-2002\"/>" +
+                "       <name value=\"n\"/>" +
+                "       <address>" +
+                "           <fact street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
+                "           <register street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
+                "       </address>" +
+                "       <gender value=\"FEMALE\"/>" +
+                "       <workPhone>+7-165-867-45-80</workPhone>" +
+                "       <mobilePhone>+7-718-096-63-80 вн. Y2RH" +
+                "       <homePhone value=\"+7-718-096-63-20\"/>" +
+                "       <charm value=\"4S7UG5gvok\"/>" +
+                "       <patronymic value=\"sn7FcW6YHyhRo\"/>" +
+                "   </client>" +
+                "</cia>";
 
         ByteArrayInputStream inputData = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
         ByteArrayOutputStream outputErrors = new ByteArrayOutputStream();
@@ -279,22 +299,24 @@ public class MySAXHandlerTest {
 
     @Test
     public void parse___ShouldLogError_When_ClientIdWithThreeQuotes() {
-        String str = "<client id=\"1-IP3-43-PF-GNsIekwnHR\"\"\">" + // HERE
-                        "   <birth value=\"15-12-2002\"/>" +
-                        "   <address mine=\"asd\">" +
-                        "       <fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
-                        "       <register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
-                        "   </address>" +
-                        "   <workPhone mine=\"asd\">+7-606-415-31-26</workPhone>" +
-                        "   <mobilePhone mine=\"asd\">+7-718-096-63-80 вн. Y2RH</mobilePhone>" +
-                        "   <gender value=\"FEMALE\"/>" +
-                        "   <surname value=\"Gh9g8EvSVo\"/>" +
-                        "   <name value=\"Azx1qg8EvSVo\"/>" +
-                        "   <charm value=\"4S7UG5gvok\"/>" +
-                        "   <workPhone>+7-165-867-45-80</workPhone>" +
-                        "   <mobilePhone>+7-903-297-09-92</mobilePhone>" +
-                        "   <patronymic value=\"sn7FcW6YHyhRo\"/>" +
-                        "</client>";
+        String str = "" +
+                "<cia>" +
+                "   <client id=\"1-IP3-43-PF-GNsIekwnHR\"\"\">" + // Here
+                "       <surname value=\"s\"/>" +
+                "       <birth value=\"12-12-2002\"/>" +
+                "       <name value=\"n\"/>" +
+                "       <address>" +
+                "           <fact street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
+                "           <register street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
+                "       </address>" +
+                "       <gender value=\"FEMALE\"/>" +
+                "       <workPhone>+7-165-867-45-80</workPhone>" +
+                "       <mobilePhone>+7-718-096-63-80 вн. Y2RH" +
+                "       <homePhone value=\"+7-718-096-63-20\"/>" +
+                "       <charm value=\"4S7UG5gvok\"/>" +
+                "       <patronymic value=\"sn7FcW6YHyhRo\"/>" +
+                "   </client>" +
+                "</cia>";
 
         ByteArrayInputStream inputData = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
         ByteArrayOutputStream outputErrors = new ByteArrayOutputStream();
@@ -312,23 +334,24 @@ public class MySAXHandlerTest {
 
     @Test
     public void parse_ShouldLogError_When_ClientWithoutSplashInClosingTag() {
-        String str = "<client id=\"1-IP3-43-PF-GNsIekwnHR\">\n" +
-                        "   <birth value=\"15-12-2002\"/>\n" +
-                        "   <address mine=\"asd\">\n" +
-                        "       <fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>\n" +
-                        "       <register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>\n" +
-                        "   </address>\n" +
-                        "   <workPhone mine=\"asd\">+7-606-415-31-26</workPhone>\n" +
-                        "   <mobilePhone mine=\"asd\">+7-718-096-63-80 вн. Y2RH\n</mobilePhone>" +
-                        "   <gender value=\"FEMALE\"/>\n" +
-                        "   <surname value=\"Gh9g8EvSVo\"/>\n" +
-                        "   <name value=\"Azx1qg8EvSVo\"/>\n" +
-                        "   <charm value=\"4S7UG5gvok\"/>\n" +
-                        "   <workPhone>+7-165-867-45-80</workPhone>\n" +
-                        "   <mobilePhone>+7-903-297-09-92</mobilePhone>\n" +
-                        "   <patronymic value=\"sn7FcW6YHyhRo\"/>\n" +
-                        "<client>"; // HERE
-
+        String str = "" +
+                "<cia>" +
+                "   <client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
+                "       <surname value=\"s\"/>" +
+                "       <birth value=\"12-12-2002\"/>" +
+                "       <name value=\"n\"/>" +
+                "       <address>" +
+                "           <fact street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
+                "           <register street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
+                "       </address>" +
+                "       <gender value=\"FEMALE\"/>" +
+                "       <workPhone>+7-165-867-45-80</workPhone>" +
+                "       <mobilePhone>+7-718-096-63-80 вн. Y2RH" +
+                "       <homePhone value=\"+7-718-096-63-20\"/>" +
+                "       <charm value=\"4S7UG5gvok\"/>" +
+                "       <patronymic value=\"sn7FcW6YHyhRo\"/>" +
+                "   <client>" + // Here
+                "</cia>";
         ByteArrayInputStream inputData = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
         ByteArrayOutputStream outputErrors = new ByteArrayOutputStream();
         MySAXHandler mySAXHandler = new MySAXHandler(connection, ciaPS, phonesPS);
@@ -345,24 +368,26 @@ public class MySAXHandlerTest {
 
     @Test
     public void parse___ShouldIgnoreElement_When_PathIsIncorrect() throws SQLException {
-        String str = "<cia><client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
-                        "   <birth value=\"15-12-2002\"/>" +
-                        "   <address mine=\"asd\">" +
-                        "       <surname value=\"Incorrect Surname #1\"/>" + // HERE
-                        "       <fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
-                        "       <register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
-                        "   </address>" +
-                        "   <workPhone mine=\"asd\">+7-606-415-31-26</workPhone>" +
-                        "   <mobilePhone mine=\"asd\">+7-718-096-63-80 вн. Y2RH</mobilePhone>" +
-                        "   <gender value=\"FEMALE\"/>" +
-                        "   <hello><world><surname value=\"Incorrect Surname #2\"/></world></hello>" + // HERE
-                        "   <name value=\"Azx1qg8EvSVo\"/>" +
-                        "   <charm value=\"4S7UG5gvok\"/>" +
-                        "   <workPhone>+7-165-867-45-80</workPhone>" +
-                        "   <mobilePhone>+7-903-297-09-92</mobilePhone>" +
-                        "   <patronymic value=\"sn7FcW6YHyhRo\"/>" +
-                        "</client></cia>";
-
+        String str = "" +
+                "<cia>" +
+                "   <client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
+                "       <birth value=\"15-12-2002\"/>" +
+                "       <address mine=\"asd\">" +
+                "           <surname value=\"Incorrect Surname #1\"/>" + // HERE
+                "           <fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
+                "           <register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
+                "       </address>" +
+                "       <workPhone mine=\"asd\">+7-606-415-31-26</workPhone>" +
+                "       <mobilePhone mine=\"asd\">+7-718-096-63-80 вн. Y2RH</mobilePhone>" +
+                "       <gender value=\"FEMALE\"/>" +
+                "       <hello><world><surname value=\"Incorrect Surname #2\"/></world></hello>" + // HERE
+                "       <name value=\"Azx1qg8EvSVo\"/>" +
+                "       <charm value=\"4S7UG5gvok\"/>" +
+                "       <workPhone>+7-165-867-45-80</workPhone>" +
+                "       <mobilePhone>+7-903-297-09-92</mobilePhone>" +
+                "       <patronymic value=\"sn7FcW6YHyhRo\"/>" +
+                "   </client>" +
+                "</cia>";
         ByteArrayInputStream inputData = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
         MySAXHandler mySAXHandler = new MySAXHandler(connection, ciaPS, phonesPS);
 
@@ -384,24 +409,27 @@ public class MySAXHandlerTest {
 
     @Test
     public void parse___ShouldReadElement_When_PathIsCorrect() throws SQLException {
-        String str = "<cia><client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
-                "   <surname value=\"Correct Surname #1\"/>" + // READ
-                "   <birth value=\"15-12-2002\"/>" +
-                "   <address mine=\"asd\">" +
-                "       <surname value=\"Incorrect Surname #1\"/>" + // NOT READ
-                "       <fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
-                "       <register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
-                "   </address>" +
-                "   <workPhone mine=\"asd\">+7-606-415-31-26</workPhone>" +
-                "   <mobilePhone mine=\"asd\">+7-718-096-63-80 вн. Y2RH</mobilePhone>" +
-                "   <gender value=\"FEMALE\"/>" +
-                "   <hello><world><surname value=\"Incorrect Surname #2\"/></world></hello>" + // NOT READ
-                "   <name value=\"Azx1qg8EvSVo\"/>" +
-                "   <charm value=\"4S7UG5gvok\"/>" +
-                "   <workPhone>+7-165-867-45-80</workPhone>" +
-                "   <mobilePhone>+7-903-297-09-92</mobilePhone>" +
-                "   <patronymic value=\"sn7FcW6YHyhRo\"/>" +
-                "</client></cia>";
+        String str = "" +
+                "<cia>" +
+                "   <client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
+                "       <surname value=\"Correct Surname #1\"/>" + // Read
+                "       <birth value=\"15-12-2002\"/>" +
+                "       <address mine=\"asd\">" +
+                "           <surname value=\"Incorrect Surname #1\"/>" +
+                "           <fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
+                "           <register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
+                "       </address>" +
+                "       <workPhone mine=\"asd\">+7-606-415-31-26</workPhone>" +
+                "       <mobilePhone mine=\"asd\">+7-718-096-63-80 вн. Y2RH</mobilePhone>" +
+                "       <gender value=\"FEMALE\"/>" +
+                "       <hello><world><surname value=\"Incorrect Surname #2\"/></world></hello>" +
+                "       <name value=\"Azx1qg8EvSVo\"/>" +
+                "       <charm value=\"4S7UG5gvok\"/>" +
+                "       <workPhone>+7-165-867-45-80</workPhone>" +
+                "       <mobilePhone>+7-903-297-09-92</mobilePhone>" +
+                "       <patronymic value=\"sn7FcW6YHyhRo\"/>" +
+                "   </client>" +
+                "</cia>";
 
         ByteArrayInputStream inputData = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
         MySAXHandler mySAXHandler = new MySAXHandler(connection, ciaPS, phonesPS);
@@ -424,24 +452,27 @@ public class MySAXHandlerTest {
 
     @Test
     public void parse___ShouldIgnoreNestedClient() throws SQLException {
-        String str = "<cia><client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
-                        "<birth value=\"12-12-2002\"/>" +
-                        "<address mine=\"asd\">" +
-                        "<fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
-                        "<register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
-                        "</address>" +
-                        "<client id=\"3-ZAC-43-PF-GNsIekwnHR\">" + // HERE
-                        "<name value=\"15-12-2002\"/>" +
-                        "<workPhone mine=\"asd\">+7-606-415-31-26</workPhone>" +
-                        "<gender value=\"FEMALE\"/>" +
-                        "<mobilePhone mine=\"asd\">+7-718-096-63-80 вн. Y2RH</mobilePhone>" +
-                        "<charm value=\"4S7UG5gvok\"/>" +
-                        "<workPhone>+7-165-867-45-80</workPhone>" +
-                        "<mobilePhone>+7-903-297-09-92</mobilePhone>" +
-                        "<patronymic value=\"sn7FcW6YHyhRo\"/>" +
-                        "</client>" +
-                        "<surname value=\"Gh9g8EvSVo\"/>" +
-                        "</client></cia>";
+        String str = "" +
+                "<cia>" +
+                "   <client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
+                "       <birth value=\"12-12-2002\"/>" +
+                "       <address mine=\"asd\">" +
+                "           <fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
+                "           <register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
+                "       </address>" +
+                "       <client id=\"3-ZAC-43-PF-GNsIekwnHR\">" + // HERE
+                "           <name value=\"15-12-2002\"/>" +
+                "           <workPhone mine=\"asd\">+7-606-415-31-26</workPhone>" +
+                "           <gender value=\"FEMALE\"/>" +
+                "           <mobilePhone mine=\"asd\">+7-718-096-63-80 вн. Y2RH</mobilePhone>" +
+                "           <charm value=\"4S7UG5gvok\"/>" +
+                "           <workPhone>+7-165-867-45-80</workPhone>" +
+                "           <mobilePhone>+7-903-297-09-92</mobilePhone>" +
+                "           <patronymic value=\"sn7FcW6YHyhRo\"/>" +
+                "       </client>" +
+                "       <surname value=\"Gh9g8EvSVo\"/>" +
+                "   </client>" +
+                "</cia>";
 
         ByteArrayInputStream inputData = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
         MySAXHandler mySAXHandler = new MySAXHandler(connection, ciaPS, phonesPS);
@@ -462,18 +493,21 @@ public class MySAXHandlerTest {
 
     @Test
     public void parse___ShouldReadMobilePhoneWithNestedCharm() throws SQLException {
-        String str = "<cia><client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
-                "<birth value=\"2002-12-12\"/>" +
-                "<address mine=\"asd\">" +
-                "<name value=\"Temilran\"/>" +
-                "<fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
-                "<register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
-                "</address>" +
-                "<gender value=\"FEMALE\"/>" +
-                "<mobilePhone><charm value=\"4S7UG5gvok\"/>+777083705095</mobilePhone>" + // Charm should not interfere
-                "<patronymic value=\"sn7FcW6YHyhRo\"/>" +
-                "<surname value=\"Gh9g8EvSVo\"/>" +
-                "</client></cia>";
+        String str = "" +
+                "<cia>" +
+                "   <client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
+                "       <birth value=\"2002-12-12\"/>" +
+                "       <address mine=\"asd\">" +
+                "           <name value=\"Temilran\"/>" +
+                "           <fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
+                "           <register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
+                "       </address>" +
+                "       <gender value=\"FEMALE\"/>" +
+                "       <mobilePhone><charm value=\"4S7UG5gvok\"/>+777083705095</mobilePhone>" + // Charm should not interfere
+                "       <patronymic value=\"sn7FcW6YHyhRo\"/>" +
+                "       <surname value=\"Gh9g8EvSVo\"/>" +
+                "   </client>" +
+                "</cia>";
 
         ByteArrayInputStream inputData = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
         MySAXHandler mySAXHandler = new MySAXHandler(connection, ciaPS, phonesPS);
@@ -494,31 +528,34 @@ public class MySAXHandlerTest {
     }
 
     @Test
-    public void parse___Should() throws SQLException {
-        String str = "<cia><client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
-                "<birth value=\"2002-12-12\"/>" +
-                "<address mine=\"asd\">" +
-                "<name value=\"CORRECT_CLIENT_NAME\"/>" +
-                "<fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
-                "<register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
-                "</address>" +
-                "<gender value=\"FEMALE\"/>" +
-                "<mobilePhone>+777083705095</mobilePhone>" +
-                "<patronymic value=\"sn7FcW6YHyhRo\"/>" +
-                "<surname value=\"Gh9g8EvSVo\"/>" +
-                "</client>" +
-                "<client id=\"2-IP3-43-PF-GNsIekwnHR\">" +
-                "<birth value=\"2002-12-12\"/>" +
-                "<address mine=\"asd\">" +
-                "<name value=\"ERROR_CLIENT_NAME\"/>" +
-                "<fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
-                "<register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
-                "</address>" +
-                "<gender value=\"FEMALE\"/>" +
-                "<mobilePhone>+777083705095</mobilePhone>" +
-                "<patronymic value=\"sn7FcW6YHyhRo\"/>" +
-                "<surname value=\"Gh9g8EvSVo\"/>" +
-                "</cia>"; // HERE NO CLOSING CLIENT TAG
+    public void parse___ShouldLoadCorrectClients_BeforeFatalErrorOccurs() throws SQLException {
+        String str = "" +
+                "<cia>" +
+                "   <client id=\"1-IP3-43-PF-GNsIekwnHR\">" +
+                "       <birth value=\"2002-12-12\"/>" +
+                "       <address mine=\"asd\">" +
+                "           <name value=\"CORRECT_CLIENT_NAME\"/>" +
+                "           <fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
+                "           <register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
+                "       </address>" +
+                "       <gender value=\"FEMALE\"/>" +
+                "       <mobilePhone>+777083705095</mobilePhone>" +
+                "       <patronymic value=\"sn7FcW6YHyhRo\"/>" +
+                "       <surname value=\"Gh9g8EvSVo\"/>" +
+                "   </client>" +
+                "   <client id=\"2-IP3-43-PF-GNsIekwnHR\">" +
+                "       <birth value=\"2002-12-12\"/>" +
+                "       <address mine=\"asd\">" +
+                "           <name value=\"ERROR_CLIENT_NAME\"/>" +
+                "           <fact mine=\"asd\" street=\"1CbPis8PMcGfcBSTQzap\" house=\"s5\" flat=\"Di\"/>" +
+                "           <register fine=\"asd\" street=\"Fh5PGzqIoxXK6r8JgzqH\" house=\"Jq\" flat=\"ta\"/>" +
+                "       </address>" +
+                "       <gender value=\"FEMALE\"/>" +
+                "       <mobilePhone>+777083705095</mobilePhone>" +
+                "       <patronymic value=\"sn7FcW6YHyhRo\"/>" +
+                "       <surname value=\"Gh9g8EvSVo\"/>" +
+                // No closing client tag here
+                "</cia>";
 
         ByteArrayInputStream inputData = new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8));
 

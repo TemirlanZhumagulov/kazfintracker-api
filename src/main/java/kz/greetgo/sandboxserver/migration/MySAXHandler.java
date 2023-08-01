@@ -1,5 +1,6 @@
 package kz.greetgo.sandboxserver.migration;
 
+import lombok.extern.slf4j.Slf4j;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -22,6 +23,7 @@ import static kz.greetgo.sandboxserver.migration.CiaMigration.uploadMaxBatchSize
 import static kz.greetgo.sandboxserver.migration.util.TimeUtils.recordsPerSecond;
 import static kz.greetgo.sandboxserver.migration.util.TimeUtils.showTime;
 
+@Slf4j
 public class MySAXHandler extends DefaultHandler {
     public final PreparedStatement ciaPS;
     public final PreparedStatement phonesPS;
@@ -214,7 +216,7 @@ public class MySAXHandler extends DefaultHandler {
             operConnection.commit();
             batchSize = 0;
             long now = System.nanoTime();
-            System.out.println(" -- downloaded records " + recordsCount + " for " + showTime(now, startedAt) + " : " + recordsPerSecond(recordsCount, now - startedAt));
+            log.info(" -- downloaded records " + recordsCount + " for " + showTime(now, startedAt) + " : " + recordsPerSecond(recordsCount, now - startedAt));
         }
 
     }
@@ -242,7 +244,7 @@ public class MySAXHandler extends DefaultHandler {
                 operConnection.commit();
             }
             long now = System.nanoTime();
-            System.out.println(" -- downloaded records " + recordsCount + " for " + showTime(now, startedAt) + " : " + recordsPerSecond(recordsCount, now - startedAt));
+            log.info(" -- downloaded records " + recordsCount + " for " + showTime(now, startedAt) + " : " + recordsPerSecond(recordsCount, now - startedAt));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

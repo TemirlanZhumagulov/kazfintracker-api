@@ -96,7 +96,6 @@ public class CiaMigrationTest {
         }
     }
 
-
     private void assertPhoneExists(String phoneNumber, String type) {
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery("SELECT count(*) FROM " + migration.tmpPhoneTable + " WHERE type = '" + type + "' AND number = '" + phoneNumber + "'")) {
@@ -162,7 +161,6 @@ public class CiaMigrationTest {
 
         assertClientsHaveError("surname is not defined", migration.tmpClientTable);
     }
-
     @Test
     public void validateSurnameAbsence___Should_Not_FlagClientAsError() throws SQLException {
         insertClientToTmp(new Client(
@@ -191,7 +189,6 @@ public class CiaMigrationTest {
 
         assertClientsHaveNoError(migration.tmpClientTable);
     }
-
     @Test
     public void validateNameAbsence___ShouldFlagClientAsError() throws SQLException {
         insertClientToTmp(new Client(
@@ -220,7 +217,6 @@ public class CiaMigrationTest {
 
         assertClientsHaveError("name is not defined", migration.tmpClientTable);
     }
-
     @Test
     public void validateNameAbsence___Should_Not_FlagClientAsError() throws SQLException {
         insertClientToTmp(new Client(
@@ -249,7 +245,6 @@ public class CiaMigrationTest {
 
         assertClientsHaveNoError(migration.tmpClientTable);
     }
-
     @Test
     public void validateBirthDateAbsence___ShouldFlagClientAsError() throws SQLException {
         insertClientToTmp(new Client(
@@ -278,7 +273,6 @@ public class CiaMigrationTest {
 
         assertClientsHaveError("birth_date is not defined", migration.tmpClientTable);
     }
-
     @Test
     public void validateBirthDateAbsence___Should_Not_FlagClientAsError() throws SQLException {
         insertClientToTmp(new Client(
@@ -307,7 +301,6 @@ public class CiaMigrationTest {
 
         assertClientsHaveNoError(migration.tmpClientTable);
     }
-
     @Test
     public void validateBirthDatePattern___ShouldFlagClientsAsError() throws SQLException {
         insertClientToTmp(new Client(
@@ -353,7 +346,6 @@ public class CiaMigrationTest {
 
         assertClientsHaveError("birth_date is not correct", migration.tmpClientTable);
     }
-
     @Test
     public void validateBirthDatePattern___Should_Not_FlagClientsAsError() throws SQLException {
         insertClientToTmp(new Client(
@@ -399,7 +391,6 @@ public class CiaMigrationTest {
 
         assertClientsHaveNoError(migration.tmpClientTable);
     }
-
     @Test
     public void validateAgeRange___ShouldFlagClientsAsError() throws SQLException {
         insertClientToTmp(new Client(
@@ -445,7 +436,6 @@ public class CiaMigrationTest {
 
         assertClientsHaveError("AGE_OUT_OF_RANGE", migration.tmpClientTable);
     }
-
     @Test
     public void validateAgeRange___Should_Not_FlagClientsAsError() throws SQLException {
         insertClientToTmp(new Client(
@@ -474,8 +464,6 @@ public class CiaMigrationTest {
 
         assertClientsHaveError("AGE_OUT_OF_RANGE", migration.tmpClientTable);
     }
-
-
     @Test
     public void markDuplicateClients___ShouldMark_FirstClientAsDuplicate() throws SQLException {
         insertClientToTmp(new Client(
@@ -528,10 +516,8 @@ public class CiaMigrationTest {
         Map<String, String> map = dbAccess.getClientFromTableWithCondition(tableName, condition);
         assertThat(map.get("name")).isEqualTo("name1");
     }
-
     @Test
     public void markDuplicatePhones___ShouldMark_FirstSamePhonesAsDuplicate() throws SQLException {
-        migration.prepareStorages();
         migration.exec("INSERT INTO TMP_PHONE (client_id, type, number, status) VALUES " +
                 "('id_001', 'HOME', '+7-718-096-63-80 вн. Y2RH','JUST INSERTED'), " +
                 "('id_001', 'HOME', '+7-718-096-63-80 вн. Y2RH','JUST INSERTED'), " +
@@ -548,9 +534,9 @@ public class CiaMigrationTest {
 
         String tableName = migration.tmpPhoneTable;
 
-        int duplicateCount = dbAccess.getRowCountFromTableWithCondition(tableName, "status = 'DUPLICATE'");
+        int duplicatesCount = dbAccess.getRowCountFromTableWithCondition(tableName, "status = 'DUPLICATE'");
 
-        assertThat(duplicateCount).isEqualTo(3);
+        assertThat(duplicatesCount).isEqualTo(3);
 
         Map<String, String> map = dbAccess.getPhoneFromTableWithCondition(tableName, "type = 'HOME' AND status='DUPLICATE'");
 
@@ -567,7 +553,6 @@ public class CiaMigrationTest {
         assertThat(map3.get("id")).isEqualTo("5");
         assertThat(map3.get("number")).isEqualTo("+123123123123");
     }
-
     @Test
     public void uploadToTmp___ShouldCheckIfClientUploadedCorrectly() throws SQLException {
         String str = "" +
@@ -650,9 +635,8 @@ public class CiaMigrationTest {
         assertThat(charmCount).isEqualTo(1);
     }
     @Test()
-    public void upsertDataToCharm___ShouldIgnoreDuplicateCharmName() throws SQLException {
-        migration.prepareStorages();
-        insertClientToTmp(new Client(
+    public void upsertDataToCharm___ShouldCheckForCharmNameUniqueness() throws SQLException {
+        Client client = new Client(
                 "'id_003-check'",
                 "'surname'",
                 "'name'",
@@ -668,27 +652,17 @@ public class CiaMigrationTest {
                 "'1st floor'",
                 "''",
                 "'FOR INSERT'"
-        ));
+        );
 
+        insertClientToTmp(client);
+
+        //
+        //
         migration.upsertDataToCharm();
+        //
+        //
 
-        insertClientToTmp(new Client(
-                "'id_003-check'",
-                "'surname'",
-                "'name'",
-                "'patronymic'",
-                "'MALE'",
-                "'unique_charm'",
-                "'2000-01-29'",
-                "'asd st.'",
-                "'145B'",
-                "'7th floor'",
-                "'Tole bi st.'",
-                "'122A'",
-                "'1st floor'",
-                "''",
-                "'FOR INSERT'"
-        ));
+        insertClientToTmp(client);
 
         //
         //
@@ -737,12 +711,11 @@ public class CiaMigrationTest {
         assertThat(map.get("charm")).isEqualTo("choleric");
     }
     @Test
-    public void markUpdateAndInsertClients___ShouldMark_ClientAsForUpdate() throws SQLException {
-        migration.prepareStorages();
-        insertClientToTmp(new Client(
+    public void markUpdateAndInsertClients___ShouldMarkClient_AsForUpdate() throws SQLException {
+        Client clientToInsert = new Client(
                 "'id_003-check'", // Will be existing Client
                 "'surname'",
-                "'name1'",
+                "'name'",
                 "'patronymic'",
                 "'MALE'",
                 "'choleric'",
@@ -755,16 +728,11 @@ public class CiaMigrationTest {
                 "'1st floor'",
                 "''",
                 "'FOR INSERT'"
-        ));
-        migration.insertDataToClient();
-
-        migration = new CiaMigration(connection); // 2nd Migration
-        migration.prepareStorages();
-
-        insertClientToTmp(new Client(
-                "'id_003-check'", // Will be Client For Update
+        );
+        Client clientToUpdate = new Client(
+                "'id_003-check'",
                 "'surname'",
-                "'name2'",
+                "'UPDATED NAME'",
                 "'patronymic'",
                 "'MALE'",
                 "'choleric'",
@@ -776,8 +744,16 @@ public class CiaMigrationTest {
                 "'122A'",
                 "'1st floor'",
                 "''",
-                "'JUST INSERTED'"
-        ));
+                "'JUST INSERTED'" // This Should be Marked As For Update
+        );
+
+        insertClientToTmp(clientToInsert);
+        migration.insertDataToClient();
+
+        migration = new CiaMigration(connection); // 2nd Migration
+        migration.prepareStorages();
+
+        insertClientToTmp(clientToUpdate);
 
         //
         //
@@ -788,24 +764,23 @@ public class CiaMigrationTest {
         String tableName = migration.tmpClientTable;
         String condition = "status = 'FOR UPDATE'";
 
-        int id = dbAccess.getRowCountFromTableWithCondition(tableName, condition);
-        assertThat(id).isEqualTo(1);
+        int clientCount = dbAccess.getRowCountFromTableWithCondition(tableName, condition);
+        assertThat(clientCount).isEqualTo(1);
 
         Map<String, String> map = dbAccess.getClientFromTableWithCondition(tableName, condition);
-        assertThat(map.get("name")).isEqualTo("name2");
+        assertThat(map.get("name")).isEqualTo("UPDATED NAME");
     }
 
     @Test()
-    public void updateDataInClient___ShouldCheckForUpdatesOfOldValues() throws SQLException {
-        migration.prepareStorages();
-        insertClientToTmp(new Client(
+    public void updateDataInClient___ShouldCheckForUpdatesOf_ClientFields() throws SQLException {
+        Client clientToInsert = new Client(
                 "'id_003-check'", // Will be existing Client
                 "'surname'",
                 "'name'",
                 "'patronymic'",
                 "'MALE'",
                 "'choleric'",
-                "'2000-12-30'",
+                "'2022-12-30'",
                 "'asd st.'",
                 "'145B'",
                 "'7th floor'",
@@ -814,13 +789,8 @@ public class CiaMigrationTest {
                 "'1st floor'",
                 "''",
                 "'FOR INSERT'"
-        ));
-        migration.upsertDataToCharm();
-        migration.insertDataToClient();
-
-        migration = new CiaMigration(connection); // 2nd Migration
-        migration.prepareStorages();
-        insertClientToTmp(new Client(
+        );
+        Client clientToUpdate = new Client(
                 "'id_003-check'", // Will be Client For Update
                 "'new_surname'",
                 "'new_name'",
@@ -836,7 +806,15 @@ public class CiaMigrationTest {
                 "'1st floor'",
                 "''",
                 "'FOR UPDATE'"
-        ));
+        );
+
+        insertClientToTmp(clientToInsert);
+        migration.upsertDataToCharm();
+        migration.insertDataToClient();
+
+        migration = new CiaMigration(connection); // 2nd Migration
+        migration.prepareStorages();
+        insertClientToTmp(clientToUpdate);
 
         //
         //
@@ -856,7 +834,7 @@ public class CiaMigrationTest {
     }
 
     @Test()
-    public void upsertDataToClientAddr___shouldUpsertNewAddressFromTmpClient() throws SQLException {
+    public void upsertDataToClientAddr___ShouldCheckForUpdatesOf_ClientAddrFields() throws SQLException {
         Client clientToInsert = new Client(
                 "'id_003-check'",
                 "'surname'",
@@ -865,12 +843,12 @@ public class CiaMigrationTest {
                 "'MALE'",
                 "'choleric'",
                 "'2022-12-30'",
-                "'asd st.'",
-                "'145B'",
-                "'7th floor'",
-                "'asd st.'",
-                "'145B'",
-                "'7th floor'",
+                "''", // Addresses are empty
+                "''",
+                "''",
+                "''",
+                "''",
+                "''",
                 "''",
                 "'FOR INSERT'"
         );
@@ -882,19 +860,22 @@ public class CiaMigrationTest {
                 "'MALE'",
                 "'choleric'",
                 "'2022-12-30'",
-                "''", // Should be empty
-                "''",
-                "''",
-                "''",
-                "''",
-                "''",
+                "'asd st.'",  // Addresses not empty
+                "'145B'",
+                "'7th floor'",
+                "'qwe st.'",
+                "'43B'",
+                "'3th floor'",
                 "''",
                 "'FOR INSERT'"
         );
 
-        migration.prepareStorages();
         insertClientToTmp(clientToInsert);
         migration.insertDataToClient();
+        migration.upsertDataToClientAddr();
+
+        Map<String, String> oldReg = dbAccess.getClientAddrByIdAndType("id_003-check", "REG");
+        Map<String, String> oldFact = dbAccess.getClientAddrByIdAndType("id_003-check", "FACT");
 
         migration = new CiaMigration(connection);
         migration.prepareStorages();
@@ -906,21 +887,41 @@ public class CiaMigrationTest {
         //
         //
 
-        Map<String, String> reg = dbAccess.getClientAddrByIdAndType("id_003-check", "REG");
-        Map<String, String> fact = dbAccess.getClientAddrByIdAndType("id_003-check", "FACT");
+        Map<String, String> newReg = dbAccess.getClientAddrByIdAndType("id_003-check", "REG");
+        Map<String, String> newFact = dbAccess.getClientAddrByIdAndType("id_003-check", "FACT");
 
-        assertThat(reg.get("street")).isEqualTo("");
-        assertThat(reg.get("house")).isEqualTo("");
-        assertThat(reg.get("flat")).isEqualTo("");
-        assertThat(fact.get("street")).isEqualTo("");
-        assertThat(fact.get("house")).isEqualTo("");
-        assertThat(fact.get("flat")).isEqualTo("");
+        assertThat(oldFact.get("street")).isEqualTo("");
+        assertThat(oldFact.get("house")).isEqualTo("");
+        assertThat(oldFact.get("flat")).isEqualTo("");
+        assertThat(oldReg.get("street")).isEqualTo("");
+        assertThat(oldReg.get("house")).isEqualTo("");
+        assertThat(oldReg.get("flat")).isEqualTo("");
+        assertThat(newFact.get("street")).isEqualTo("asd st.");
+        assertThat(newFact.get("house")).isEqualTo("145B");
+        assertThat(newFact.get("flat")).isEqualTo("7th floor");
+        assertThat(newReg.get("street")).isEqualTo("qwe st.");
+        assertThat(newReg.get("house")).isEqualTo("43B");
+        assertThat(newReg.get("flat")).isEqualTo("3th floor");
     }
     @Test
-    public void upsertDataToClientPhone___ShouldUpsertPhonesFromTmpPhone() throws SQLException {
-        String clientToInsert = "INSERT INTO TMP_CLIENT (client_id, surname, name, patronymic, gender, charm, birth, fact_street, fact_house, fact_flat, register_street, register_house, register_flat, error, status) " +
-                "VALUES ('id_003-check', 'surname', 'name', 'patronymic', 'MALE', 'unique_charm', '2000-1-29', " +
-                "'asd st.', '145B', '7th floor', 'Tole bi st.', '122A', '1st floor','','JUST INSERTED')";
+    public void upsertDataToClientPhone___ShouldCheckIfClientPhonesExist() throws SQLException {
+        Client clientToInsert = new Client(
+                "'id_003-check'",
+                "'surname'",
+                "'name1'",
+                "'patronymic'",
+                "'MALE'",
+                "'choleric'",
+                "'2022-12-30'",
+                "'asd st.'",
+                "'145B'",
+                "'7th floor'",
+                "'qwe st.'",
+                "'43B'",
+                "'3th floor'",
+                "''",
+                "'FOR INSERT'"
+        );
         String phonesToInsert = "INSERT INTO TMP_PHONE (client_id, type, number) VALUES " +
                 "('id_003-check', 'HOME', '+7-718-096-63-80 вн. Y2RH'), " +
                 "('id_003-check', 'WORK', '+7-708-304-22-23'), " +
@@ -928,8 +929,7 @@ public class CiaMigrationTest {
                 "('id_003-check', 'WORK', '+123123123123'), " +
                 "('id_003-check', 'MOBILE', '+321321321')";
 
-        migration.prepareStorages();
-        migration.exec(clientToInsert);
+        insertClientToTmp(clientToInsert);
         migration.exec(phonesToInsert);
         migration.insertDataToClient();
 
@@ -948,20 +948,27 @@ public class CiaMigrationTest {
 
     @Test
     public void uploadErrors___ShouldCheckErrorUploadAfterValidations() throws SQLException {
-        String clientToInsert = "INSERT INTO TMP_CLIENT (client_id, surname, name, patronymic, gender, charm, birth, fact_street, fact_house, fact_flat, register_street, register_house, register_flat, error, status) " +
-                "VALUES ('id_003-check', 'surname', 'name', 'patronymic', 'MALE', 'unique_charm', '2000-1-29', " +
-                "'asd st.', '145B', '7th floor', 'Tole bi st.', '122A', '1st floor','','JUST INSERTED')";
-        String clientToInsertCopy = "INSERT INTO TMP_CLIENT (client_id, surname, name, patronymic, gender, charm, birth, fact_street, fact_house, fact_flat, register_street, register_house, register_flat, error, status) " +
-                "VALUES ('id_003-check', 'surname', 'name', 'patronymic', 'MALE', 'unique_charm', '2000-1-29', " +
-                "'asd st.', '145B', '7th floor', 'Tole bi st.', '122A', '1st floor','','JUST INSERTED')";
-
+        Client clientToInsert = new Client(
+                "'id_003-check'",
+                "''", // No surname
+                "'name'",
+                "'patronymic'",
+                "'MALE'",
+                "'choleric'",
+                "'2000-12-30'",
+                "'asd st.'",
+                "'145B'",
+                "'7th floor'",
+                "'qwe st.'",
+                "'43B'",
+                "'3th floor'",
+                "''",
+                "'FOR INSERT'"
+        );
         ByteArrayOutputStream outputErrors = new ByteArrayOutputStream();
-
-        migration.prepareStorages();
         migration.outputStream = outputErrors;
-        migration.exec(clientToInsert);
-        migration.exec(clientToInsertCopy);
-        migration.markDuplicateClients();
+        insertClientToTmp(clientToInsert);
+        migration.validateSurnameAbsence();
 
         //
         //
@@ -971,12 +978,13 @@ public class CiaMigrationTest {
 
         String errors = outputErrors.toString(StandardCharsets.UTF_8);
 
-        assertThat(errors).isEqualTo("id_003-check,name,surname,2000-1-29,ERROR,DUPLICATE\n");
+        assertThat(errors).isEqualTo("id_003-check,name,,2000-12-30,ERROR,surname is not defined\n");
     }
 
     @Test
     public void migrate___ShouldCheckForNewClients() throws SQLException {
-        String dataToInsert = "<cia>\n" +
+        String dataToInsert = "" +
+                "<cia>\n" +
                 "  <client id=\"id_003-check\">\n" +
                 "    <workPhone>+7-201-918-64-13 вн. afm3</workPhone>\n" +
                 "    <birth value=\"2000-08-06\"/>\n" +

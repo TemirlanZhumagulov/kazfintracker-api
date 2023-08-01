@@ -185,10 +185,8 @@ public class CiaMigration implements Closeable {
         //language=PostgreSQL
         try {
             upsertDataToCharm();
-//            exec("CREATE INDEX ON charm (name)");
             updateDataInClient();
             insertDataToClient();
-//            exec("CREATE INDEX ON client (id)");
             upsertDataToClientPhone();
             upsertDataToClientAddr();
         } catch (SQLException e) {
@@ -222,7 +220,7 @@ public class CiaMigration implements Closeable {
     protected void upsertDataToClientPhone() throws SQLException {
         //language=PostgreSQL
         exec("INSERT INTO client_phone (client, number, type) " +
-                "SELECT tp.id, tp.number, tp.type FROM TMP_PHONE tp " +
+                "SELECT tp.client_id, tp.number, tp.type FROM TMP_PHONE tp " +
                 "WHERE tp.status != 'DUPLICATE' " +
                 "AND EXISTS (SELECT 1 FROM client c WHERE c.id = tp.client_id) " +
                 "ON CONFLICT (client, type, number) DO NOTHING");  // to do optimize takes 1 minute (CTE + JOIN OR THIS)
@@ -240,15 +238,7 @@ public class CiaMigration implements Closeable {
     }
 
     protected void uploadErrors() {
-//        String filePath = "build/logs/" + errorFileName;
-//        File file = new File(filePath);
-//        File parentDir = file.getParentFile();
-//        if (!parentDir.exists()) {
-//            parentDir.mkdirs();
-//        }
-
         try (Statement statement = connection.createStatement()) {
-//             BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) {
 
             int offset = 0;
             boolean hasMoreData = true;
@@ -262,7 +252,6 @@ public class CiaMigration implements Closeable {
                 while (resultSet.next()) {
                     String data = resultSet.getString("client_id") + "," + resultSet.getString("name") + "," + resultSet.getString("surname")
                             + "," + resultSet.getString("birth") + "," + resultSet.getString("status") + "," + resultSet.getString("error") + "\n";
-//                    writer.write(data);
                     outputStream.write(data.getBytes(StandardCharsets.UTF_8));
                     rowCount++;
                 }

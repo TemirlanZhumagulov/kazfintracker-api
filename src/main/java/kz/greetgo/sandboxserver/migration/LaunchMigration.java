@@ -22,7 +22,7 @@ public class LaunchMigration {
         File[] xmlFiles = new File(unzippedFilesDir).listFiles((dir, name) -> name.toLowerCase().endsWith(".xml"));
 
         if (xmlFiles == null) {
-            log.error("rb2VHYtjxj :: No XML files found in the directory.");
+            log.error("O00W8796WE :: No XML files found in the directory.");
             return;
         }
 
