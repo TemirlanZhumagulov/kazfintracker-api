@@ -57,7 +57,7 @@ public class LaunchMigration {
 
     }
 
-    private static ByteArrayInputStream transformXMLtoInputStream(File xmlFile) {
+    protected static ByteArrayInputStream transformXMLtoInputStream(File xmlFile) {
         try (FileInputStream fis = new FileInputStream(xmlFile);
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[BUFFER_SIZE];

@@ -16,10 +16,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Stack;
 
-import static kz.greetgo.sandboxserver.migration.CiaMigration.downloadMaxBatchSize;
+import static kz.greetgo.sandboxserver.migration.CiaMigration.uploadMaxBatchSize;
 import static kz.greetgo.sandboxserver.migration.util.TimeUtils.recordsPerSecond;
 import static kz.greetgo.sandboxserver.migration.util.TimeUtils.showTime;
 
@@ -44,25 +43,6 @@ public class MySAXHandler extends DefaultHandler {
         this.ciaPS = ciaPS;
         this.phonesPS = phonesPS;
         this.recordsCount = 0;
-    }
-
-    static class Client {
-        String id;
-        String surname;
-        String name;
-        String patronymic;
-        String gender;
-        String charm;
-        String birth;
-        String factStreet;
-        String factHouse;
-        String factFlat;
-        String registerStreet;
-        String registerHouse;
-        String registerFlat;
-        List<String> mobilePhones;
-        List<String> workPhones;
-        String homePhone;
     }
 
     public void parse(InputStream inputStream, OutputStream outputStream) {
@@ -190,7 +170,7 @@ public class MySAXHandler extends DefaultHandler {
             phonesPS.setString(3, value);
             phonesPS.addBatch();
             phonesBatchSize++;
-            if (phonesBatchSize >= downloadMaxBatchSize) {
+            if (phonesBatchSize >= uploadMaxBatchSize) {
                 phonesPS.executeBatch();
                 operConnection.commit();
                 phonesBatchSize = 0;
@@ -229,7 +209,7 @@ public class MySAXHandler extends DefaultHandler {
             addPhones("MOBILE", client.mobilePhones.get(i));
         }
 
-        if (batchSize >= downloadMaxBatchSize) {
+        if (batchSize >= uploadMaxBatchSize) {
             ciaPS.executeBatch();
             operConnection.commit();
             batchSize = 0;

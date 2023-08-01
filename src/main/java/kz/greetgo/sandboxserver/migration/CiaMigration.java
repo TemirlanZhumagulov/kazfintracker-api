@@ -12,32 +12,31 @@ import static kz.greetgo.sandboxserver.migration.util.TimeUtils.showTime;
 
 @Slf4j
 public class CiaMigration implements Closeable {
-    public static int downloadMaxBatchSize = 50_000;
     public static int uploadMaxBatchSize = 50_000;
     public String tmpClientTable;
     public String tmpPhoneTable;
     public String errorFileName;
-    private Connection operConnection;
+    private Connection connection;
     public InputStream inputData;
     public OutputStream outputStream;
 
     public CiaMigration(Connection connection) {
-        operConnection = connection;
+        this.connection = connection;
     }
 
     @Override
     public void close() {
-        closeOperConnection();
+        closeConnection();
     }
 
-    private void closeOperConnection() {
-        if (operConnection != null) {
+    private void closeConnection() {
+        if (connection != null) {
             try {
-                operConnection.close();
+                connection.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-            operConnection = null;
+            connection = null;
         }
     }
 
@@ -51,7 +50,7 @@ public class CiaMigration implements Closeable {
         String executingSql = r(sql);
 
         long startedAt = System.nanoTime();
-        try (Statement statement = operConnection.createStatement()) {
+        try (Statement statement = connection.createStatement()) {
             int updates = statement.executeUpdate(executingSql);
             log.info("Updated " + updates
                     + " records for " + showTime(System.nanoTime(), startedAt)
@@ -65,7 +64,7 @@ public class CiaMigration implements Closeable {
 
     public void migrate() {
         prepareStorages();
-        download();
+        uploadToTmp();
         filterTmp();
         migrateFromTmp();
         uploadErrors();
@@ -85,22 +84,23 @@ public class CiaMigration implements Closeable {
         DatabaseSetup.dropCreateTables(tmpClientTable, tmpPhoneTable);
     }
 
-    protected void download() {
+    protected void uploadToTmp() {
         long startedAt = System.nanoTime();
 
         String insertClientSQL = "INSERT INTO TMP_CLIENT (client_id, surname, name, patronymic, gender, charm, birth, fact_street, fact_house, fact_flat, register_street, register_house, register_flat, error, status) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,'','JUST INSERTED')";
-        String insertPhonesPS = "INSERT INTO TMP_PHONE (client_id, type, number) VALUES (?,?,?)";
+        String insertPhonesPS = "INSERT INTO TMP_PHONE (client_id, type, number, status) VALUES (?,?,?,'JUST INSERTED')";
 
-        try (PreparedStatement ciaPS = operConnection.prepareStatement(r(insertClientSQL));
-             PreparedStatement phonesPS = operConnection.prepareStatement(r(insertPhonesPS))) {
-            operConnection.setAutoCommit(false);
+        try (PreparedStatement ciaPS = connection.prepareStatement(r(insertClientSQL));
+             PreparedStatement phonesPS = connection.prepareStatement(r(insertPhonesPS))) {
+            connection.setAutoCommit(false);
 
-            MySAXHandler handler = new MySAXHandler(operConnection, ciaPS, phonesPS);
+            MySAXHandler handler = new MySAXHandler(connection, ciaPS, phonesPS);
             handler.startedAt = startedAt;
             handler.parse(inputData, outputStream);
+
             inputData.close();
-            operConnection.setAutoCommit(true);
+            connection.setAutoCommit(true);
         } catch (Exception e) {
             throw new RuntimeException("MB53tR5JmA :: ", e);
         }
@@ -113,10 +113,11 @@ public class CiaMigration implements Closeable {
             validateBirthDateAbsence();
             validateBirthDatePattern();
             validateAgeRange();
-            validateDuplicateClients();
-            validateDuplicatePhones();
+            markDuplicateClients();
+            markDuplicatePhones();
+            markUpdateAndInsertClients();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("TgVy9663Cw :: ", e);
         }
     }
 
@@ -155,35 +156,38 @@ public class CiaMigration implements Closeable {
                 " WHERE error = '' and EXTRACT(YEAR FROM AGE(NOW(), TO_DATE(birth, 'YYYY-MM-DD'))) NOT BETWEEN 18 AND 100");
     }
 
-    protected void validateDuplicateClients() throws SQLException {
+    protected void markDuplicateClients() throws SQLException {
         //language=PostgreSQL
-        exec("UPDATE TMP_CLIENT AS c1 SET error = 'DUPLICATE', status = 'ERROR' " +
-                "FROM (" +
-                "    SELECT client_id, MAX(id) AS max_id " +
-                "    FROM TMP_CLIENT" +
-                "    WHERE error = ''" +
-                "    GROUP BY client_id " +
-                "    HAVING COUNT(*) > 1 " +
-                ") AS c2 WHERE c1.client_id = c2.client_id AND c1.id < c2.max_id;"); // to do optimize takes 40 seconds
+        exec("WITH CTE AS ( SELECT id, ROW_NUMBER() OVER (PARTITION BY client_id ORDER BY id DESC) AS row_num" +
+                " FROM TMP_CLIENT )" +
+                " UPDATE TMP_CLIENT t SET status = 'DUPLICATE'" +
+                " FROM CTE c WHERE c.row_num > 1 AND t.id = c.id;");
     }
-    protected void validateDuplicatePhones() throws SQLException{
+
+    protected void markDuplicatePhones() throws SQLException {
         //language=PostgreSQL
-        exec("DELETE FROM TMP_PHONE AS t1 " +
-                "USING TMP_PHONE AS t2 " +
-                "WHERE t1.client_id = t2.client_id" +
-                "  AND t1.type = t2.type" +
-                "  AND t1.number = t2.number" +
-                "  AND t1.id < t2.id");
+        exec("WITH CTE AS ( SELECT id, ROW_NUMBER() OVER (PARTITION BY client_id, type, number ORDER BY id DESC) AS row_num" +
+                " FROM TMP_PHONE )" +
+                " UPDATE TMP_PHONE t SET status = 'DUPLICATE'" +
+                " FROM CTE c WHERE c.row_num > 1 AND t.id = c.id");
     }
+    protected void markUpdateAndInsertClients() throws SQLException {
+        //language=PostgreSQL
+        exec("UPDATE TMP_CLIENT AS t SET status = " +
+                "CASE" +
+                " WHEN EXISTS (SELECT 1 FROM client WHERE client.id = t.client_id) THEN 'FOR UPDATE' " +
+                " ELSE 'FOR INSERT'" +
+                "END" +
+                " WHERE status = 'JUST INSERTED'");
+    }
+
     protected void migrateFromTmp() {
         //language=PostgreSQL
         try {
             upsertDataToCharm();
-//            //language=PostgreSQL
 //            exec("CREATE INDEX ON charm (name)");
-            updateDuplicatesInClient();
+            updateDataInClient();
             insertDataToClient();
-//            //language=PostgreSQL
 //            exec("CREATE INDEX ON client (id)");
             upsertDataToClientPhone();
             upsertDataToClientAddr();
@@ -195,60 +199,43 @@ public class CiaMigration implements Closeable {
 
     protected void upsertDataToCharm() throws SQLException {
         //language=PostgreSQL
-        exec("INSERT INTO charm (name) SELECT DISTINCT charm FROM TMP_CLIENT WHERE status != 'ERROR'" +
+        exec("INSERT INTO charm (name) SELECT DISTINCT charm FROM TMP_CLIENT WHERE status != 'ERROR' AND status != 'DUPLICATE'" +
                 " ON CONFLICT (name) DO NOTHING ");
     }
-    protected void updateDuplicatesInClient(){
+
+    protected void updateDataInClient() throws SQLException {
         //language=PostgreSQL
-        String query2 = "UPDATE client AS c " +
+        exec("UPDATE client AS c " +
                 "SET surname = t.surname, name = t.name, patronymic = t.patronymic, gender = t.gender, " +
                 "birth_date = TO_DATE(t.birth, 'YYYY-MM-DD'), charm_id = (SELECT id FROM charm WHERE name = t.charm) " +
-                "FROM TMP_CLIENT AS t WHERE c.id = t.client_id " +
-                "RETURNING c.id, c.surname, c.name, c.birth_date, c.gender";
-
-        try (Statement statement = operConnection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery(r(query2));
-            if (resultSet.next()) {
-                do {
-                    String id = resultSet.getString("id");
-                    String surname = resultSet.getString("surname");
-                    String name = resultSet.getString("name");
-                    Date birthDate = resultSet.getDate("birth_date");
-                    String gender = resultSet.getString("gender");
-
-                    outputStream.write(String.format("%s, %s, %s, %s, %s, %s, %s\n",
-                            id, surname, name, birthDate, gender, "DUPLICATE", "ERROR").getBytes(StandardCharsets.UTF_8));
-                } while (resultSet.next());
-            }
-        } catch (SQLException | IOException e) {
-            throw new RuntimeException("3M4w7M09be :: ", e);
-        }
+                "FROM TMP_CLIENT t WHERE t.status = 'FOR UPDATE' AND c.id = t.client_id");
     }
+
     protected void insertDataToClient() throws SQLException {
         //language=PostgreSQL
         exec("INSERT INTO client (id, surname, name, patronymic, gender, birth_date, charm_id) " +
                 "SELECT client_id, surname, name, patronymic, gender, TO_DATE(birth, 'YYYY-MM-DD'), (SELECT id FROM charm WHERE name = charm) " +
-                "FROM TMP_CLIENT WHERE status != 'ERROR' " +
-                "ON CONFLICT (id) DO NOTHING");
+                "FROM TMP_CLIENT WHERE status = 'FOR INSERT'");
 
     }
 
     protected void upsertDataToClientPhone() throws SQLException {
         //language=PostgreSQL
         exec("INSERT INTO client_phone (client, number, type) " +
-                "SELECT tp.client_id, tp.number, tp.type FROM TMP_PHONE tp " +
-                "INNER JOIN client c ON tp.client_id = c.id " +
+                "SELECT tp.id, tp.number, tp.type FROM TMP_PHONE tp " +
+                "WHERE tp.status != 'DUPLICATE' " +
+                "AND EXISTS (SELECT 1 FROM client c WHERE c.id = tp.client_id) " +
                 "ON CONFLICT (client, type, number) DO NOTHING");  // to do optimize takes 1 minute (CTE + JOIN OR THIS)
     }
 
     protected void upsertDataToClientAddr() throws SQLException {
         //language=PostgreSQL
         exec("INSERT INTO client_addr (client, type, street, house, flat) " +
-                "SELECT client_id, 'FACT', fact_street, fact_house, fact_flat FROM TMP_CLIENT WHERE status != 'ERROR' " +
+                "SELECT client_id, 'FACT', fact_street, fact_house, fact_flat FROM TMP_CLIENT WHERE status != 'ERROR' AND status != 'DUPLICATE'" +
                 "ON CONFLICT (client, type) DO UPDATE  SET street=excluded.street, house=excluded.house, flat=excluded.flat");
         //language=PostgreSQL
         exec("INSERT INTO client_addr (client, type, street, house, flat) " +
-                "SELECT client_id, 'REG', register_street, register_house, register_flat FROM TMP_CLIENT WHERE status != 'ERROR' " +
+                "SELECT client_id, 'REG', register_street, register_house, register_flat FROM TMP_CLIENT WHERE status != 'ERROR' AND status != 'DUPLICATE'" +
                 "ON CONFLICT (client, type) DO UPDATE  SET street=excluded.street, house=excluded.house, flat=excluded.flat");
     }
 
@@ -260,7 +247,7 @@ public class CiaMigration implements Closeable {
 //            parentDir.mkdirs();
 //        }
 
-        try (Statement statement = operConnection.createStatement()) {
+        try (Statement statement = connection.createStatement()) {
 //             BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) {
 
             int offset = 0;

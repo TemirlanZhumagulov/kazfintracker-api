@@ -151,7 +151,8 @@ public class DatabaseSetup {
                 + "id SERIAL PRIMARY KEY,"
                 + "client_id VARCHAR(50),"
                 + "type VARCHAR(10),"
-                + "number VARCHAR(50)"
+                + "number VARCHAR(50),"
+                + "status VARCHAR(50) DEFAULT 'JUST INSERTED'"
                 + ")";
 
         try (Statement statement = connection.createStatement()) {
