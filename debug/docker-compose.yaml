@@ -16,8 +16,9 @@ services:
     restart: always
     mem_limit: 8G
     environment:
+      POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "pass123"
-      POSTGRES_INITDB_ARGS: "-c work_mem=1GB -c maintenance_work_mem=4GB -c max_connections=50 "
+      POSTGRES_DB: "sandbox_db"
     ports:
       - "12218:5432"
     volumes:

@@ -4,14 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 
-import static kz.greetgo.sandboxserver.migration.DatabaseSetup.createActualTables;
-import static kz.greetgo.sandboxserver.migration.DatabaseSetup.dropActualTables;
-import static kz.greetgo.sandboxserver.migration.util.LogUtils.logErrorsToFile;
+import static kz.greetgo.sandboxserver.migration.DatabaseSetup.createSourceTables;
+import static kz.greetgo.sandboxserver.migration.DatabaseSetup.dropSourceTables;
 import static kz.greetgo.sandboxserver.migration.util.UnzipUtils.uncompressFiles;
 
 @Slf4j
 public class LaunchMigration {
-    public static final int BUFFER_SIZE = 4096;
 
     public static void main(String[] args) {
         String zippedFilesDir = "build/out_files";
@@ -28,54 +26,29 @@ public class LaunchMigration {
 
         try (CiaMigration migration = new CiaMigration(DatabaseSetup.getConnection())) {
 
-            dropActualTables();
-            createActualTables();
+            dropSourceTables();
+            createSourceTables();
 
             for (File xmlFile : xmlFiles) {
-                log.info("Reading file - " + xmlFile.getName());
+                log.info("I7VpYZrfFd :: Reading file: " + xmlFile.getName());
 
-                InputStream inputStream = transformXMLtoInputStream(xmlFile);
-                OutputStream outputStream = new ByteArrayOutputStream();
+                String outputFile = "build/logs/" + xmlFile.getName() + "_errors.log";
 
-                if (inputStream == null) {
-                    log.error("9u6nSrS68w :: XML file " + xmlFile.getName() + " can't be transformed to InputStream");
-                    continue;
+                try (InputStream inputStream = new FileInputStream(xmlFile);
+                     OutputStream outputStream = new FileOutputStream(outputFile)) {
+
+                    migration.inputData = inputStream;
+                    migration.outputErrors = outputStream;
+
+                    migration.migrate();
+
                 }
-
-                migration.inputData = inputStream;
-                migration.outputStream = outputStream;
-
-                migration.migrate();
-
-                String outputFile = "build/logs/" + migration.errorFileName;
-
-                logErrorsToFile(outputStream, outputFile);
             }
         } catch (Exception e) {
             throw new RuntimeException("FAo7yQlZS6 :: ", e);
         }
 
     }
-
-    protected static ByteArrayInputStream transformXMLtoInputStream(File xmlFile) {
-        try (FileInputStream fis = new FileInputStream(xmlFile);
-             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int bytesRead;
-
-            while ((bytesRead = fis.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-            }
-
-            byte[] data = outputStream.toByteArray();
-
-            return new ByteArrayInputStream(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
 
 
 }

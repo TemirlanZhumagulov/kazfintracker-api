@@ -1,9 +1,10 @@
-package kz.greetgo.sandboxserver.migration;
+package kz.greetgo.sandboxserver.migration.xml_parser;
 
 import java.util.List;
 
-public class Client {
-    public String id;
+public class ClientTmp {
+    public int id;
+    public String client_id;
     public String surname;
     public String name;
     public String patronymic;
@@ -22,11 +23,12 @@ public class Client {
     List<String> mobilePhones;
     List<String> workPhones;
 
-    public Client() {
+    public ClientTmp() {
     }
 
-    public Client(String id, String surname, String name, String patronymic, String gender, String charm, String birth, String factStreet, String factHouse, String factFlat, String registerStreet, String registerHouse, String registerFlat, String error, String status) {
+    public ClientTmp(int id, String client_id, String surname, String name, String patronymic, String gender, String charm, String birth, String factStreet, String factHouse, String factFlat, String registerStreet, String registerHouse, String registerFlat, String error, String status) {
         this.id = id;
+        this.client_id = client_id;
         this.surname = surname;
         this.name = name;
         this.patronymic = patronymic;

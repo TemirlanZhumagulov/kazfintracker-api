@@ -14,7 +14,7 @@ public class UnzipUtils {
         File[] files = directory.listFiles((dir, name) -> name.endsWith("xml.tar.bz2"));
 
         if (files == null) {
-            log.error("No XML files found in the directory.");
+            log.error("xOHV93z9jj :: No XML files found in the directory.");
             return;
         }
 

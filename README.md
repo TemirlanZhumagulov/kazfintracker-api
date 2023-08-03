@@ -16,8 +16,8 @@
 2. создание TMP таблицы
 3. загрузка данных в TMP
 4. валидация данных
-5. создание Actual Tables
-6. Загрузка данных в Actual Tables
+5. создание Source Tables
+6. Загрузка данных в Source Tables
 7. Загрузка ошибок из TMP в лог файл
 
 Чтобы посмотреть лог файл с ошибками заходим в папку build/debug/database_errors_[date].csv
