@@ -257,19 +257,16 @@ public class CiaMigration implements Closeable {
 
             while (hasMoreData) {
                 String sql = "SELECT client_id, name, surname, birth, status, error FROM " + tmpClientTable + " WHERE status='ERROR' LIMIT " + uploadMaxBatchSize + " OFFSET " + offset;
-                ResultSet resultSet = statement.executeQuery(sql);
-
                 int rowCount = 0;
 
-                while (resultSet.next()) {
-                    String data = resultSet.getString("client_id") + "," + resultSet.getString("name") + "," + resultSet.getString("surname")
-                            + "," + resultSet.getString("birth") + "," + resultSet.getString("status") + "," + resultSet.getString("error") + "\n";
-                    outputErrors.write(data.getBytes(StandardCharsets.UTF_8));
-                    rowCount++;
+                try(ResultSet resultSet = statement.executeQuery(sql)) {
+                    while (resultSet.next()) {
+                        String data = resultSet.getString("client_id") + "," + resultSet.getString("name") + "," + resultSet.getString("surname")
+                                + "," + resultSet.getString("birth") + "," + resultSet.getString("status") + "," + resultSet.getString("error") + "\n";
+                        outputErrors.write(data.getBytes(StandardCharsets.UTF_8));
+                        rowCount++;
+                    }
                 }
-
-                resultSet.close();
-
                 hasMoreData = rowCount == uploadMaxBatchSize;
 
                 offset += uploadMaxBatchSize;

@@ -35,7 +35,7 @@ public abstract class SaxHandler extends DefaultHandler {
         } catch (SAXException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("w55V70avQC :: ", e);
         }
     }
 
@@ -54,7 +54,7 @@ public abstract class SaxHandler extends DefaultHandler {
         } catch (SAXException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("323U71Sht0 :: ", e);
         }
         pathList.remove(pathList.size() - 1);
         currentValue = null;

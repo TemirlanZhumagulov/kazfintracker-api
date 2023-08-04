@@ -93,6 +93,7 @@ public class XmlParser extends SaxHandler {
             currentClient.factStreet = attributes.getValue("street");
             currentClient.factHouse = attributes.getValue("house");
             currentClient.factFlat = attributes.getValue("flat");
+            return;
         }
         if ("/cia/client/address/register".equals(path)) {
             currentClient.registerStreet = attributes.getValue("street");
@@ -106,9 +107,13 @@ public class XmlParser extends SaxHandler {
         String path = path();
         if ("/cia/client/mobilePhone".equals(path)) {
             currentClient.mobilePhones.add(text());
-        } else if ("/cia/client/workPhone".equals(path)) {
+            return;
+        }
+        if ("/cia/client/workPhone".equals(path)) {
             currentClient.workPhones.add(text());
-        } else if ("/cia/client".equals(path)) {
+            return;
+        }
+        if ("/cia/client".equals(path)) {
             insertClientToBatch(currentClient);
         }
     }
@@ -132,14 +137,14 @@ public class XmlParser extends SaxHandler {
             batchSize++;
             recordsCount++;
 
-            if (client.homePhone != null) {
-                insertPhoneToPhoneBatch("HOME", client.homePhone);
-            }
             for (int i = 0; i < client.workPhones.size(); i++) {
                 insertPhoneToPhoneBatch("WORK", client.workPhones.get(i));
             }
             for (int i = 0; i < client.mobilePhones.size(); i++) {
                 insertPhoneToPhoneBatch("MOBILE", client.mobilePhones.get(i));
+            }
+            if (client.homePhone != null) {
+                insertPhoneToPhoneBatch("HOME", client.homePhone);
             }
 
             if (batchSize >= uploadMaxBatchSize) {
@@ -147,10 +152,10 @@ public class XmlParser extends SaxHandler {
                 connection.commit();
                 batchSize = 0;
                 long now = System.nanoTime();
-                log.info("downloaded records " + recordsCount + " for " + showTime(now, startedAt) + " : " + recordsPerSecond(recordsCount, now - startedAt));
+                log.info("avUOTsGR9P :: downloaded records " + recordsCount + " for " + showTime(now, startedAt) + " : " + recordsPerSecond(recordsCount, now - startedAt));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("O2i80Bi6Fv :: ", e);
         }
     }
 
@@ -168,7 +173,7 @@ public class XmlParser extends SaxHandler {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("3P4wHLyZqw :: ", e);
         }
     }
 
@@ -184,7 +189,7 @@ public class XmlParser extends SaxHandler {
                 connection.commit();
                 long now = System.nanoTime();
                 recordsCount += batchSize;
-                log.info("downloaded records " + recordsCount + " for " + showTime(now, startedAt) + " : " + recordsPerSecond(recordsCount, now - startedAt));
+                log.info("XDP0ux4d2p :: downloaded records " + recordsCount + " for " + showTime(now, startedAt) + " : " + recordsPerSecond(recordsCount, now - startedAt));
                 batchSize = 0;
             }
             if (phonesBatchSize > 0) {

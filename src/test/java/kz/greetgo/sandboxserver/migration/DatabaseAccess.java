@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DatabaseAccess {
-    private final Connection connection;
+    public final Connection connection;
     public String tmpClientTable;
     public String tmpPhoneTable;
 

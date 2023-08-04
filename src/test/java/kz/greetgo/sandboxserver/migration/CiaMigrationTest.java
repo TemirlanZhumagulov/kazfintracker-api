@@ -59,6 +59,9 @@ public class CiaMigrationTest {
                 connection.close();
                 connection = null;
             }
+            if(dbAccess.connection != null){
+                dbAccess.connection.close();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
