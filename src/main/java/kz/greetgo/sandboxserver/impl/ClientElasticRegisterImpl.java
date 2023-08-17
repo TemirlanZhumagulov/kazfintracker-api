@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class ClientElasticRegisterImpl implements ClientElasticRegister {
+    @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
     @Autowired
     private ElasticWorker elasticWorker;
 

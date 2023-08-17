@@ -10,7 +10,7 @@ public class LoggingConfig {
 
     @Bean
     public Logger logger() {
-        return LoggerFactory.getLogger("com.example"); // Replace "com.example" with your desired logger name
+        return LoggerFactory.getLogger("kz.greetgo.sandboxserver");
     }
 
 }

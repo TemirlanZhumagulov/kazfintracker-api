@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/v1/crud")
 @CrossOrigin("*")
 public class ClientCrudController {
+    @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
     @Autowired
     private ClientRegister clientRegister;
 

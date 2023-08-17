@@ -65,7 +65,6 @@ public class ElasticWorkerImpl implements InitializingBean, DisposableBean, Elas
         try {
             return restClient.performRequest(request);
         } catch (IOException e) {
-            System.out.println("RUNTIME EXCEPTION");
             throw new RuntimeException(e);
         }
     }

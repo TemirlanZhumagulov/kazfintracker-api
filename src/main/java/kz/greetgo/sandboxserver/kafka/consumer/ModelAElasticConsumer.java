@@ -14,35 +14,35 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ModelAElasticConsumer {
 
-  @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
-  @Autowired
-  private TestAElasticRegister testAElasticRegister;
+    @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
+    @Autowired
+    private TestAElasticRegister testAElasticRegister;
 
-  @KafkaListener(id = "model-a-elastic-consumer", topics = KafkaTopics.TOPIC_MODEL_A, containerFactory = "containerFactory")
-  public void consume(String value) {
-    log.info("data is consumed from kafka: " + value);
-    TestModelAKafka modelA = ObjectMapperHolder.readJson(value, TestModelAKafka.class);
+    @KafkaListener(id = "model-a-elastic-consumer", topics = KafkaTopics.TOPIC_MODEL_A, containerFactory = "containerFactory")
+    public void consume(String value) {
+        log.info("data is consumed from kafka: " + value);
+        TestModelAKafka modelA = ObjectMapperHolder.readJson(value, TestModelAKafka.class);
 
-    TestModelAElastic modelAElastic = modelA.toElastic();
-    log.info("data is converted to elastic: " + modelAElastic.id + modelAElastic.strField + modelA.changeVariant);
+        TestModelAElastic modelAElastic = modelA.toElastic();
+        log.info("data is converted to elastic: " + modelAElastic.id + modelAElastic.strField + modelA.changeVariant);
 
-    switch (modelA.changeVariant) {
-      case CREATE:
-        testAElasticRegister.create(modelAElastic);
-        break;
+        switch (modelA.changeVariant) {
+            case CREATE:
+                testAElasticRegister.create(modelAElastic);
+                break;
 
-      case UPDATE:
-        testAElasticRegister.update(modelAElastic);
-        break;
+            case UPDATE:
+                testAElasticRegister.update(modelAElastic);
+                break;
 
-      case DELETE:
-        testAElasticRegister.delete(modelAElastic.id);
-        break;
+            case DELETE:
+                testAElasticRegister.delete(modelAElastic.id);
+                break;
 
-      default:
-        throw new RuntimeException("Unsupported type of changeVariant " + modelA.changeVariant);
+            default:
+                throw new RuntimeException("Unsupported type of changeVariant " + modelA.changeVariant);
+        }
+
     }
-
-  }
 
 }

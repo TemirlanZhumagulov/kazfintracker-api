@@ -13,16 +13,19 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class ClientConsumer {
+
+    @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
     @Autowired
     ClientElasticRegister clientElasticRegister;
+
     @KafkaListener(id = "client-elastic-consumer", topics = KafkaTopics.TOPIC_CLIENT, containerFactory = "containerFactory")
     public void consume(String value) {
         log.info("KAFKA CONSUMED A JSON VALUE: " + value);
         ClientKafka clientKafka = ObjectMapperHolder.readJson(value, ClientKafka.class);
         log.info("VALUE TRANSFORMED INTO CLIENT KAFKA CLASS: " + clientKafka);
-        log.info("CLIENT BIRTHDATE: " + clientKafka.birth_date);
         ClientElastic clientElastic = clientKafka.toElastic();
         log.info("CLIENT TRANSFORMED INTO THE ELASTIC CLASS");
+
         switch (clientKafka.changeVariant) {
             case CREATE:
                 clientElasticRegister.create(clientElastic);
@@ -39,8 +42,6 @@ public class ClientConsumer {
             default:
                 throw new RuntimeException("Unsupported type of changeVariant " + clientKafka.changeVariant);
         }
-
     }
-
 
 }

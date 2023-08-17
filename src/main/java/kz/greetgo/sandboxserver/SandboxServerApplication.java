@@ -60,17 +60,18 @@ public class SandboxServerApplication extends SpringBootServletInitializer imple
 
 
     @Override
-    public void run(String... args) {
-        List<ClientToUpsert> clients = generateRandomClients(100); // Generate 10 random clients
+    public void run(String... args) throws InterruptedException {
+        Thread.sleep(3000L); // Wait before elastic is created
+        List<ClientToUpsert> clients = generateRandomClients();
         for (ClientToUpsert client : clients) {
             clientRegister.create(client);
         }
     }
 
-    private List<ClientToUpsert> generateRandomClients(int count) {
+    private List<ClientToUpsert> generateRandomClients() {
         List<ClientToUpsert> clients = new ArrayList<>();
 
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < 100; i++)   {
             ClientToUpsert client = new ClientToUpsert();
             client.setId("1");
             client.setSurname(generateRandomString(10));
@@ -83,7 +84,7 @@ public class SandboxServerApplication extends SpringBootServletInitializer imple
             client.setHomePhone(generateRandomDigits());
             client.setWorkPhone(generateRandomDigits());
             client.setMobilePhone(generateRandomDigits());
-            client.setPhones(generateRandomPhones(3));
+            client.setPhones(generateRandomPhones());
             client.setAccount(generateRandomAccount());
             clients.add(client);
         }
@@ -135,10 +136,10 @@ public class SandboxServerApplication extends SpringBootServletInitializer imple
         return addresses;
     }
 
-    private List<String> generateRandomPhones(int count) {
+    private List<String> generateRandomPhones() {
         List<String> phones = new ArrayList<>();
 
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < 3; i++) {
             phones.add(generateRandomDigits());
         }
 

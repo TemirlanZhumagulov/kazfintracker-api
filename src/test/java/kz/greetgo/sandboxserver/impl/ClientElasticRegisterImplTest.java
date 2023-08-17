@@ -10,8 +10,6 @@ import kz.greetgo.sandboxserver.model.web.upsert.ClientToUpsert;
 import kz.greetgo.sandboxserver.mongo.MongoAccess;
 import kz.greetgo.sandboxserver.register.ClientElasticRegister;
 import kz.greetgo.sandboxserver.register.ClientRegister;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -31,10 +29,9 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     MongoAccess mongoAccess;
     @Autowired
     private ClientRegister clientRegister;
-    private static final Logger logger = LoggerFactory.getLogger(ClientElasticRegisterImplTest.class);
 
     @Test
-    public void createElasticClient() {
+    public void create___createElasticClient() {
         ClientToUpsert toUpsert = clientToUpsert();
 
         //
@@ -64,7 +61,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     }
 
     @Test
-    public void deleteElasticClient(){
+    public void create___deleteElasticClient(){
         ClientToUpsert toUpsert = clientToUpsert();
         toUpsert.setRndTestingId("deleteElasticClient");
         //
@@ -92,7 +89,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     }
 
     @Test
-    public void testLoadAllTotalValue(){
+    public void loadAll___testLoadAllTotalValue(){
         ClientResponse response = elasticRegister.loadAll(Paging.defaultPaging());
         int initialCount = elasticRegister.getClientListCount();
         assertThat(response.getTotal()).isEqualTo(initialCount);
@@ -129,7 +126,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     }
 
     @Test
-    public void testLoadAllPaging(){
+    public void loadAll___testLoadAllPaging(){
         List<ClientToUpsert> toUpsert = getTestClients("testLoadAllPaging");
         String[] ids = new String[toUpsert.size()];
 
@@ -164,7 +161,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
 
 
     @Test
-    public void sortFullNameAsc() {
+    public void load___sortFullNameAsc() {
         // Data prep
         String uniqueTestingId = "sortFullNameAsc2";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
@@ -173,7 +170,6 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
             //
             //
             idArray[i] = clientRegister.create(clients.get(i));
-            logger.info("Client Is Created " + clients.get(i));
             //
             //
         }
@@ -197,7 +193,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         }
     }
     @Test
-    public void sortFullNameDesc(){
+    public void load___sortFullNameDesc(){
         // Data prep
         String uniqueTestingId = "sortFullNameDesc2";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
@@ -221,6 +217,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
         //
         //
+
         List<ClientElastic> clientElastics = clientResponse.getClients();
         for (int i = 0; i < 10; i++) {
             assertThat(clientElastics.get(i).full_name).isEqualTo(clients.get(9 - i).getSurname() + " " + clients.get(9-i).getName() + " " + clients.get(9 - i).getPatronymic());
@@ -232,7 +229,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     }
 
     @Test
-    public void sortAgeAsc(){
+    public void load___sortAgeAsc(){
         // Data prep
         String uniqueTestingId = "sortAgeAsc2";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
@@ -241,7 +238,6 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
             //
             //
             idArray[i] = clientRegister.create(clients.get(i));
-            logger.info("Client Is Created " + clients.get(i));
             //
             //
         }
@@ -265,18 +261,12 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         }
     }
     @Test
-    public void sortAgeDesc(){
-// Data prep
+    public void load___sortAgeDesc(){
         String uniqueTestingId = "sortAgeDesc";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
         String[] idArray = new String[10];
         for (int i = 0; i < 10; i++) {
-            //
-            //
             idArray[i] = clientRegister.create(clients.get(i));
-            logger.info("Client Is Created " + clients.get(i));
-            //
-            //
         }
         ClientsTableRequest ctr = new ClientsTableRequest();
         ctr.sorting = new HashMap<>();
@@ -292,24 +282,20 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         for (int i = 0; i < 10; i++) {
             assertThat(Integer.parseInt(clientElastics.get(i).age)).isEqualTo(Period.between(clients.get(i).getBirth_date(), LocalDate.now()).getYears());
         }
-        // Data clean
         for (int i = 0; i < 10; i++) {
             clientRegister.delete(idArray[i]);
         }
     }
     @Test
-    public void sortCharmAsc(){
+    public void load___sortCharmAsc(){
         // Data prep
         String uniqueTestingId = "sortCharmAsc2";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
         String[] idArray = new String[10];
         for (int i = 0; i < 10; i++) {
-            //
-            //
             idArray[i] = clientRegister.create(clients.get(i));
-            //
-            //
         }
+
         ClientsTableRequest ctr = new ClientsTableRequest();
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("charm", true);
@@ -331,17 +317,13 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     }
 
     @Test
-    public void sortCharmDesc(){
+    public void load___sortCharmDesc(){
         // Data prep
         String uniqueTestingId = "sortCharmDesc";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
         String[] idArray = new String[10];
         for (int i = 0; i < 10; i++) {
-            //
-            //
             idArray[i] = clientRegister.create(clients.get(i));
-            //
-            //
         }
         ClientsTableRequest ctr = new ClientsTableRequest();
         ctr.sorting = new HashMap<>();
@@ -364,17 +346,13 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     }
 
     @Test
-    public void sortTotalBalanceAsc(){
+    public void load___sortTotalBalanceAsc(){
         // Data prep
         String uniqueTestingId = "sortTotalBalanceAsc";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
         String[] idArray = new String[10];
         for (int i = 0; i < 10; i++) {
-            //
-            //
             idArray[i] = clientRegister.create(clients.get(i));
-            //
-            //
         }
         ClientsTableRequest ctr = new ClientsTableRequest();
         ctr.sorting = new HashMap<>();
@@ -396,17 +374,13 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         }
     }
     @Test
-    public void sortTotalBalanceDesc(){
+    public void load___sortTotalBalanceDesc(){
         // Data prep
         String uniqueTestingId = "sortTotalBalanceDesc";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
         String[] idArray = new String[10];
         for (int i = 0; i < 10; i++) {
-            //
-            //
             idArray[i] = clientRegister.create(clients.get(i));
-            //
-            //
         }
         ClientsTableRequest ctr = new ClientsTableRequest();
         ctr.sorting = new HashMap<>();
@@ -428,17 +402,13 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         }
     }
     @Test
-    public void sortMaxBalanceAsc(){
+    public void load___sortMaxBalanceAsc(){
         // Data prep
         String uniqueTestingId = "sortMaxBalanceAsc";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
         String[] idArray = new String[10];
         for (int i = 0; i < 10; i++) {
-            //
-            //
             idArray[i] = clientRegister.create(clients.get(i));
-            //
-            //
         }
         ClientsTableRequest ctr = new ClientsTableRequest();
         ctr.sorting = new HashMap<>();
@@ -460,17 +430,13 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         }
     }
     @Test
-    public void sortMaxBalanceDesc(){
+    public void load___sortMaxBalanceDesc(){
         // Data prep
         String uniqueTestingId = "sortMaxBalanceDesc";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
         String[] idArray = new String[10];
         for (int i = 0; i < 10; i++) {
-            //
-            //
             idArray[i] = clientRegister.create(clients.get(i));
-            //
-            //
         }
         ClientsTableRequest ctr = new ClientsTableRequest();
         ctr.sorting = new HashMap<>();
@@ -492,17 +458,13 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         }
     }
     @Test
-    public void sortMinBalanceAsc(){
+    public void load___sortMinBalanceAsc(){
         // Data prep
         String uniqueTestingId = "sortMinBalanceAsc";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
         String[] idArray = new String[10];
         for (int i = 0; i < 10; i++) {
-            //
-            //
             idArray[i] = clientRegister.create(clients.get(i));
-            //
-            //
         }
         ClientsTableRequest ctr = new ClientsTableRequest();
         ctr.sorting = new HashMap<>();
@@ -524,17 +486,13 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         }
     }
     @Test
-    public void sortMinBalanceDesc(){
+    public void load___sortMinBalanceDesc(){
         // Data prep
         String uniqueTestingId = "sortMinBalanceDesc";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
         String[] idArray = new String[10];
         for (int i = 0; i < 10; i++) {
-            //
-            //
             idArray[i] = clientRegister.create(clients.get(i));
-            //
-            //
         }
         ClientsTableRequest ctr = new ClientsTableRequest();
         ctr.sorting = new HashMap<>();
@@ -556,17 +514,13 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         }
     }
     @Test
-    public void testPaginationWithSorting() {
+    public void load___testPaginationWithSorting() {
         // Data prep
         String uniqueTestingId = "testLoadPagination4";
         List<ClientToUpsert> clients = getTestClients(uniqueTestingId);
         String[] idArray = new String[10];
         for (int i = 0; i < 10; i++) {
-            //
-            //
             idArray[i] = clientRegister.create(clients.get(i));
-            //
-            //
         }
         ClientsTableRequest ctr = new ClientsTableRequest();
         ctr.sorting = new HashMap<>();
@@ -576,9 +530,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,5));
-        logger.info("t1VY0WZUXL :: " + clientResponse.getClients().toString());
         ClientResponse clientResponse2 = elasticRegister.load(ctr, Paging.of(5,5));
-        logger.info("OJIs4s9PLX :: " + clientResponse2.getClients().toString());
         //
         //
         List<ClientElastic> clientElastics = clientResponse.getClients();
@@ -596,17 +548,13 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
     }
 
     @Test
-    public void testPaginationWithFilter() {
+    public void load___testPaginationWithFilter() {
         // Data prep
         String uniqueName = "UNIQUE NAME";
         List<ClientToUpsert> clients = getTestClientsForFilter(uniqueName);
         String[] idArray = new String[10];
         for (int i = 0; i < 10; i++) {
-            //
-            //
             idArray[i] = clientRegister.create(clients.get(i));
-            //
-            //
         }
         ClientsTableRequest ctr = new ClientsTableRequest();
         ctr.sorting = new HashMap<>();
@@ -616,7 +564,6 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,3));
-        logger.info("t1VY0WZUXL :: " + clientResponse.getClients().toString());
         //
         //
         List<ClientElastic> clientElastics = clientResponse.getClients();

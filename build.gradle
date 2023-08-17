@@ -17,11 +17,11 @@ dependencies {
     // region spring
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     // endregion spring
 
     // region mongo
     implementation 'org.mongodb:mongodb-driver-sync:4.5.1'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     // endregion mongo
 
 
@@ -57,7 +57,6 @@ dependencies {
 
     // region email
     implementation "com.sun.mail:jakarta.mail:1.6.4"
-    implementation 'kz.greetgo.conf:greetgo.conf:2.0.3'
     implementation 'kz.greetgo:greetgo.email:1.0.7'
     implementation 'org.springframework.boot:spring-boot-starter-mail:1.2.0.RELEASE'
     // endregion email
@@ -84,10 +83,6 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
     // endregion logger
 
-    // region lombok
-    compileOnly 'org.projectlombok:lombok:1.18.28'
-    annotationProcessor 'org.projectlombok:lombok:1.18.28'
-    // endregion lombok
 }
 
 test {
