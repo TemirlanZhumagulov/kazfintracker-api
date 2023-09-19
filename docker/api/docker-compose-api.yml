@@ -1,0 +1,22 @@
+version: "2.3"
+
+networks:
+  default:
+    external:
+      name: sandbox-network
+
+services:
+
+  api:
+    image: dockerhub.mybpm.kz/api-tzh-master:latest
+    container_name: api
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SANDBOX_MONGO_SERVER: "mongo:27017"
+      SANDBOX_ZOOKEEPER_SERVER: "zoo:2181"
+      BOOTSTRAP_SERVERS: "kf:9093"
+      SANDBOX_ELASTIC_HOST: "es"
+      SANDBOX_ELASTIC_PORT: 9200
+      SANDBOX_POSTGRE_URL: "pg:5432"

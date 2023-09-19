@@ -143,7 +143,7 @@ services:
     environment:
       - discovery.type=single-node
       - node.name=from-plugin
-      - bootstrap.memory_lock=true
+      - bootstrapbootstrap.memory_lock=true
       - index.store.type=hybridfs
       - "ES_JAVA_OPTS=-Xms1500m -Xmx1500m"
       - xpack.security.enabled=false

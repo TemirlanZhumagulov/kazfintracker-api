@@ -1,5 +1,6 @@
 package kz.greetgo.sandboxserver.spring_config.kafka;
 
+import kz.greetgo.sandboxserver.util.StrUtils;
 import kz.greetgo.sandboxserver.util.serializer.MyStringSerializer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.LongSerializer;
@@ -26,7 +27,7 @@ public class KafkaProducerConfig {
   @Bean
   public Map<String, Object> producerConfigs() {
     Map<String, Object> props = new HashMap<>();
-    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
+    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, StrUtils.getEnvOrDefault("BOOTSTRAP_SERVERS", kafkaServer));
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, MyStringSerializer.class);
     props.put(ProducerConfig.CLIENT_ID_CONFIG, kafkaProducerId);

@@ -5,8 +5,8 @@ plugins {
 }
 
 group = 'kz.greetgo'
-version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
+buildDir = './docker/build'
 
 repositories {
     mavenCentral()
@@ -83,6 +83,12 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
     // endregion logger
 
+}
+
+
+jar {
+    baseName rootProject.name
+    archiveClassifier = ''
 }
 
 test {

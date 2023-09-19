@@ -1,5 +1,6 @@
 package kz.greetgo.sandboxserver.spring_config.postgre;
 
+import kz.greetgo.sandboxserver.util.StrUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +22,7 @@ public class PostgreConnectionManager {
 
   public Connection getPostgresqlConnection() {
     try {
-      return DriverManager.getConnection(url, username, password);
+      return DriverManager.getConnection(StrUtils.getEnvOrDefault("SANDBOX_POSTGRE_URL", url), username, password);
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }

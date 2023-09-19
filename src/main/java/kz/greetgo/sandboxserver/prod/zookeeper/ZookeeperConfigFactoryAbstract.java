@@ -3,6 +3,7 @@ package kz.greetgo.sandboxserver.prod.zookeeper;
 import kz.greetgo.conf.zookeeper.AbstractZookeeperConfigFactory;
 import kz.greetgo.sandboxserver.config.ElasticConfig;
 import kz.greetgo.sandboxserver.config.TestConfig;
+import kz.greetgo.sandboxserver.util.StrUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +30,7 @@ public class ZookeeperConfigFactoryAbstract extends AbstractZookeeperConfigFacto
 
   @Override
   protected String zooConnectionString() {
-    return zookeeperServer;
+    return StrUtils.getEnvOrDefault("SANDBOX_ZOOKEEPER_SERVER", zookeeperServer);
   }
 
   @Override

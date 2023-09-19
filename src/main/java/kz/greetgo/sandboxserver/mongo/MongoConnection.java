@@ -8,6 +8,7 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import kz.greetgo.sandboxserver.spring_config.mongo.codec.EnumCodecRegistry;
 import kz.greetgo.sandboxserver.spring_config.mongo.codec.TimeZoneCodec;
+import kz.greetgo.sandboxserver.util.StrUtils;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.springframework.beans.factory.DisposableBean;
@@ -39,10 +40,10 @@ public class MongoConnection implements InitializingBean, DisposableBean {
   public void afterPropertiesSet() {
 
     MongoClientSettings.Builder mcsBuilder = MongoClientSettings.builder()
-      .codecRegistry(createCodecRegistry())
-      .readPreference(readPreference());
+            .codecRegistry(createCodecRegistry())
+            .readPreference(readPreference());
 
-    mongoClient = createMongoClient(mongoServer, mcsBuilder);
+    mongoClient = createMongoClient(StrUtils.getEnvOrDefault("SANDBOX_MONGO_SERVER", mongoServer), mcsBuilder);
 
     database = mongoClient.getDatabase(DB_NAME);
   }
@@ -58,10 +59,10 @@ public class MongoConnection implements InitializingBean, DisposableBean {
     EnumCodecRegistry enumCodecRegistry = new EnumCodecRegistry();
 
     return fromRegistries(
-      TimeZoneCodec.REGISTRY,
-      codecRegistry,
-      fromProviders(pojoCodecProvider),
-      enumCodecRegistry
+            TimeZoneCodec.REGISTRY,
+            codecRegistry,
+            fromProviders(pojoCodecProvider),
+            enumCodecRegistry
     );
   }
 
@@ -76,7 +77,11 @@ public class MongoConnection implements InitializingBean, DisposableBean {
       throw new IllegalArgumentException("Mongo server location is not defined");
     }
 
-    return new ConnectionString(server);
+    if (server.contains("://")) {
+      return new ConnectionString(server);
+    }
+
+    return new ConnectionString("mongodb://" + server);
   }
 
   private ReadPreference readPreference() {

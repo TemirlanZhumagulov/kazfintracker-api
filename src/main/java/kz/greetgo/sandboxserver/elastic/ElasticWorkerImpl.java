@@ -5,6 +5,7 @@ import kz.greetgo.sandboxserver.elastic.model.CountWrapper;
 import kz.greetgo.sandboxserver.elastic.model.EsBodyWrapper;
 import kz.greetgo.sandboxserver.model.Paging;
 import kz.greetgo.sandboxserver.model.web.ClientsTableRequest;
+import kz.greetgo.sandboxserver.util.StrUtils;
 import kz.greetgo.sandboxserver.util.jackson.ObjectMapperHolder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +49,7 @@ public class ElasticWorkerImpl implements InitializingBean, DisposableBean, Elas
     @Override
     public void afterPropertiesSet() {
         restClient = RestClient.builder(
-                new HttpHost(host, port, schema)
+                new HttpHost(StrUtils.getEnvOrDefault("SANDBOX_ELASTIC_HOST", host), StrUtils.<Integer>getEnvOrDefault("SANDBOX_ELASTIC_PORT", port), schema)
         ).build();
 
     }
