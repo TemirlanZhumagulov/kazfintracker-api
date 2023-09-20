@@ -1,0 +1,1 @@
+dockerhub.mybpm.kz/sandbox-api

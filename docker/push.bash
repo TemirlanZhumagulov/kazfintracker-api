@@ -3,10 +3,12 @@ set -e
 
 cd "$(dirname "$0")" || exit 113
 
-IMAGE_NAME="$(bash ./meta/name.bash)"
-VERSION="$(bash ./meta/version.bash)"
+IMAGE_NAME=$(cat ./name.txt)
+VERSION="$(cat ../version.txt)"
 
-bash ./image.sh
+echo VERSION
+
+bash ./image.bash
 
 docker push "${IMAGE_NAME}"
 

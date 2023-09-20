@@ -38,7 +38,7 @@ public class ElasticWorkerImpl implements InitializingBean, DisposableBean, Elas
     private String host;
 
     @Value("${sandbox.elastic.port}")
-    private int port;
+    private String port;
 
     private RestClient restClient;
 
@@ -49,7 +49,7 @@ public class ElasticWorkerImpl implements InitializingBean, DisposableBean, Elas
     @Override
     public void afterPropertiesSet() {
         restClient = RestClient.builder(
-                new HttpHost(StrUtils.getEnvOrDefault("SANDBOX_ELASTIC_HOST", host), StrUtils.<Integer>getEnvOrDefault("SANDBOX_ELASTIC_PORT", port), schema)
+                new HttpHost(StrUtils.getEnvOrDefault("SANDBOX_ELASTIC_HOST", host), Integer.parseInt(StrUtils.getEnvOrDefault("SANDBOX_ELASTIC_PORT", port)), schema)
         ).build();
 
     }

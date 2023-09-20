@@ -4,7 +4,7 @@ set -e
 
 PROJECT_NAME=api
 
-IMAGE_NAME="$(bash ./meta/name.bash)"
+IMAGE_NAME=$(cat ./name.txt)
 
 cd ..
 
