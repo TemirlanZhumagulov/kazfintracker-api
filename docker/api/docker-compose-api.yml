@@ -8,7 +8,7 @@ networks:
 services:
 
   api:
-    image: dockerhub.mybpm.kz/sandbox-api-tzh:0.0.1
+    image: dockerhub.mybpm.kz/sandbox-api-tzh:latest
     container_name: api
     restart: always
     ports:
