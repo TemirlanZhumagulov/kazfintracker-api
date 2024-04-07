@@ -20,7 +20,7 @@ public class ClientTableController {
     public ClientResponse loadAll(
             @RequestParam(value = "offset", required = false, defaultValue = "0") int offset,
             @RequestParam(value = "limit", required = false, defaultValue = "10") int limit) {
-        return clientElasticRegister.loadAll(Paging.of(offset, limit));
+        return clientElasticRegister.loadAll(Paging.of(offset, limit ));
     }
 
     @PostMapping("/filtered")

@@ -27,6 +27,8 @@ public class ClientDto {
     public String mobilePhone;
     public List<ClientAddress> addresses;
     public List<String> phones;
+    public List<AccountDto> accounts;
+
     public String rndTestingId;
 
     public static ClientDto from(ObjectId id, ClientToUpsert client) {

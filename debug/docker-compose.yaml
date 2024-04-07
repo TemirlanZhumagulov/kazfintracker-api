@@ -135,7 +135,7 @@ services:
 
   es:
     container_name: sandbox-es
-    image: elasticsearch:7.12.1
+    image: elasticsearch:8.3.2
     mem_limit: 3000M
     restart: always
     ports:
@@ -155,7 +155,7 @@ services:
       - ~/volumes/sandbox/elasticsearch:/usr/share/elasticsearch/data
 
   kibana:
-    image: kibana:7.12.1
+    image: kibana:8.3.2
     container_name: sandbox-kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://sandbox-es:9200

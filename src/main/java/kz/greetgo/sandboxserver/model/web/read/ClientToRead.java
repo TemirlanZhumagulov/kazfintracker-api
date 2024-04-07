@@ -13,6 +13,7 @@ public class ClientToRead {
     public String surname;
     public String name;
     public String patronymic;
+    public String email;
     public Gender gender;
     public LocalDate birth_date;
     public Charm charm;

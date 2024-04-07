@@ -1,6 +1,5 @@
 package kz.greetgo.sandboxserver.spring_config.kafka;
 
-import kz.greetgo.sandboxserver.util.StrUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,7 +38,7 @@ public class KafkaConsumerConfig {
   @Bean
   public Map<String, Object> consumerConfigs() {
     Map<String, Object> props = new HashMap<>();
-    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, StrUtils.getEnvOrDefault("BOOTSTRAP_SERVERS", kafkaServer));
+    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServer);
     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
     props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaGroupId);

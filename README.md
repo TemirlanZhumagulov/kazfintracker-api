@@ -1,7 +1,7 @@
 # migration
 
 Шаги для запуска миграции:
-1. в папке debug/docker-compose.yaml запускаем pg (image: postgres:13.4) 
+1. в папке debug/docker-compose.yaml запускаем pg (imageDto: postgres:13.4) 
 2. в классе kz/greetgo/sandboxserver/migration/GenerateInputFiles.java запускаем метод main для генераций файлов (около 5 минут)
 3. После генраций, в классе kz/greetgo/sandboxserver/migration/LaunchMigration.java запускаем main метод
 

@@ -11,7 +11,6 @@ import kz.greetgo.sandboxserver.model.web.upsert.ClientToUpsert;
 import kz.greetgo.sandboxserver.spring_config.connection.Connections;
 import kz.greetgo.sandboxserver.spring_config.scheduler.SchedulerManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
@@ -26,7 +25,7 @@ import java.util.Random;
 
 @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
 @SpringBootApplication
-public class SandboxServerApplication extends SpringBootServletInitializer implements CommandLineRunner {
+public class SandboxServerApplication extends SpringBootServletInitializer {
 
     @Lazy
     @Autowired
@@ -58,15 +57,15 @@ public class SandboxServerApplication extends SpringBootServletInitializer imple
         schedulerManager.start();
     }
 
-
-    @Override
-    public void run(String... args) throws InterruptedException {
-        Thread.sleep(3000L); // Wait before elastic is created
-        List<ClientToUpsert> clients = generateRandomClients();
-        for (ClientToUpsert client : clients) {
-            clientRegister.create(client);
-        }
-    }
+// implements CommandLineRunner
+//    @Override
+//    public void run(String... args) throws InterruptedException {
+//        Thread.sleep(3000L); // Wait before elastic is created
+//        List<ClientToUpsert> clients = generateRandomClients();
+//        for (ClientToUpsert client : clients) {
+//            clientRegister.create(client);
+//        }
+//    }
 
     private List<ClientToUpsert> generateRandomClients() {
         List<ClientToUpsert> clients = new ArrayList<>();

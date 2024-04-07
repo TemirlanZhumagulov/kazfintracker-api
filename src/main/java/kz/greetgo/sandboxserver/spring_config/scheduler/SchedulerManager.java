@@ -2,7 +2,6 @@ package kz.greetgo.sandboxserver.spring_config.scheduler;
 
 import kz.greetgo.kafka.core.config.EventConfigStorageZooKeeper;
 import kz.greetgo.kafka.core.config.ZooConnectParams;
-import kz.greetgo.sandboxserver.util.StrUtils;
 import kz.greetgo.scheduling.HasScheduled;
 import kz.greetgo.scheduling.collector.Task;
 import kz.greetgo.scheduling.scheduler.Scheduler;
@@ -30,7 +29,7 @@ public class SchedulerManager implements DisposableBean {
   private Scheduler scheduler;
 
   private final EventConfigStorageZooKeeper zookeeperConfigStorage = new EventConfigStorageZooKeeper(
-    "sandbox/scheduler", () -> StrUtils.getEnvOrDefault("SANDBOX_ZOOKEEPER_SERVER", zookeeperServer), ZooConnectParams.builder().build()
+    "sandbox/scheduler", () -> zookeeperServer, ZooConnectParams.builder().build()
   );
 
   @Override

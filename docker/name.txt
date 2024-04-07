@@ -1,1 +1,0 @@
-dockerhub.mybpm.kz/sandbox-api-tzh
