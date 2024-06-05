@@ -5,6 +5,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static java.lang.Double.parseDouble;
+import static kz.kazfintracker.sandboxserver.util.ParserUtil.*;
+
 @Data
 public class BankAccountElastic {
     private String id;
@@ -22,12 +25,12 @@ public class BankAccountElastic {
         bankAccount.setId(map.get("id"));
         bankAccount.setName(map.get("name"));
         bankAccount.setSymbol(map.get("symbol"));
-        bankAccount.setColor(Integer.parseInt(map.getOrDefault("color", "0")));
-        bankAccount.setStartingValue(Double.parseDouble(map.getOrDefault("startingValue", "0.0")));
-        bankAccount.setActive(Boolean.parseBoolean(map.get("active")));
-        bankAccount.setMainAccount(Boolean.parseBoolean(map.get("mainAccount")));
-        bankAccount.setCreatedAt(LocalDateTime.parse(map.get("createdAt")));
-        bankAccount.setUpdatedAt(LocalDateTime.parse(map.get("updatedAt")));
+        bankAccount.setColor(parseInt(map.getOrDefault("color", "0")));
+        bankAccount.setStartingValue(parseDouble(map.getOrDefault("startingValue", "0.0")));
+        bankAccount.setActive(parseBoolean(map.get("active")));
+        bankAccount.setMainAccount(parseBoolean(map.get("mainAccount")));
+        bankAccount.setCreatedAt(parseLocalDateTime(map.get("createdAt")));
+        bankAccount.setUpdatedAt(parseLocalDateTime(map.get("updatedAt")));
         return bankAccount;
     }
 }

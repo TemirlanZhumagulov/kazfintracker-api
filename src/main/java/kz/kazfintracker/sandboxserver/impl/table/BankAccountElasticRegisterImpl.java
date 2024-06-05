@@ -144,7 +144,7 @@ public class BankAccountElasticRegisterImpl {
         return income - expenses;
     }
 
-    @Tool("Checks budget utilization for each category")
+    @Tool("Checks budget utilization for transactions")
     public Map<String, Double> checkBudgetUtilization() {
         Map<String, Double> budgetUsage = new HashMap<>();
         List<BudgetElastic> budgets = elasticWorker.findAll(ElasticIndexes.INDEX_BUDGET, Paging.of(0, 100)).hits.hits()
@@ -154,12 +154,12 @@ public class BankAccountElasticRegisterImpl {
                 .collect(Collectors.toList());
 
         for (BudgetElastic budget : budgets) {
-            double spent = elasticWorker.sumFieldWithQuery(ElasticIndexes.INDEX_TRANSACTION, "amount", "idCategory:" + budget.getIdCategory());
-            budgetUsage.put(budget.getName(), spent);
+            double saved = elasticWorker.sumFieldWithQuery(ElasticIndexes.INDEX_TRANSACTION, "amount", "idCategory:" + budget.getIdCategory());
+            budgetUsage.put(budget.getName(), saved);
         }
         return budgetUsage;
     }
-
+//
 //    @Tool("Alerts if current month's spending is unusually high")
 //    public boolean alertUnusualSpending() {
 //        Map<LocalDate, Double> monthlyReport = monthlySpendingReport();

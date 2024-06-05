@@ -84,9 +84,9 @@ public class BankingApiController {
     public void fillDemoData(int countOfGeneratedTransaction) {
 
         // Creating some fake bank accounts
-        bankAccountRegister.create(new BankAccount(70, "Revolut", "payments", 1, 1235.10, 1, 1, LocalDateTime.now().toString(), LocalDateTime.now().toString()));
-        bankAccountRegister.create(new BankAccount(71, "N26", "credit_card", 2, 3823.56, 1, 0, LocalDateTime.now().toString(), LocalDateTime.now().toString()));
-        bankAccountRegister.create(new BankAccount(72, "Fineco", "account_balance", 3, 0.00, 1, 0, LocalDateTime.now().toString(), LocalDateTime.now().toString()));
+        bankAccountRegister.create(new BankAccount(70, "Kaspi Bank", "payments", 1, 1235.10, 1, 1, LocalDateTime.now().toString(), LocalDateTime.now().toString()));
+        bankAccountRegister.create(new BankAccount(71, "Halyk Bank", "credit_card", 2, 3823.56, 1, 0, LocalDateTime.now().toString(), LocalDateTime.now().toString()));
+        bankAccountRegister.create(new BankAccount(72, "Freedom Bank", "account_balance", 3, 0.00, 1, 0, LocalDateTime.now().toString(), LocalDateTime.now().toString()));
 
         // Creating some fake categories
         categoryTransactionRegister.create(new CategoryTransaction(10, "Out", "restaurant", 0, "", null, LocalDateTime.now().toString(), LocalDateTime.now().toString()));
@@ -97,10 +97,11 @@ public class BankingApiController {
         categoryTransactionRegister.create(new CategoryTransaction(15, "Salary", "work", 5, "", null, LocalDateTime.now().toString(), LocalDateTime.now().toString()));
 
         // Creating some currencies
-        currencyRegister.create(new Currency(1, "€", "EUR", "Euro", 1));
-        currencyRegister.create(new Currency(2, "$", "USD", "United States Dollar", 0));
+        currencyRegister.create(new Currency(2, "$", "USD", "United States Dollar", 1));
+        currencyRegister.create(new Currency(1, "€", "EUR", "Euro", 0));
         currencyRegister.create(new Currency(3, "CHF", "CHF", "Switzerland Franc", 0));
         currencyRegister.create(new Currency(4, "£", "GBP", "United Kingdom Pound", 0));
+        currencyRegister.create(new Currency(5, "₸", "KZT", "Kazakhstani Tenge", 0));
 
         // Create fake budgets
         budgetRegister.create(new Budget(1, 13, "Grocery", 400.00, 1, LocalDateTime.now().toString(), LocalDateTime.now().toString()));
@@ -151,9 +152,6 @@ public class BankingApiController {
             transactions.add(new Transaction(i, randomDate, randomAmount, randomType, randomOutNote, randomCategoryId, randomBankAccountId, idBankAccountTransfer, 0, null, null, null, null, randomDate, randomDate));
         }
 
-        // Batch insert transactions to the database
-        transactions.forEach(transaction -> transactionRegister.create(transaction));
-
         // Add salary every month
         for (int i = 1; i <= dateInPastMaxRange / 30; i++) {
             String salaryDateTime = now.minusMonths(i).withDayOfMonth(27).toString();
@@ -167,6 +165,8 @@ public class BankingApiController {
         transactions.add(new Transaction(++countOfGeneratedTransaction, null, 7.99, "OUT", "Netflix", 14, 71, null, (byte) 1, "monthly", 19, "2022-11-14", null, date, date));
         transactions.add(new Transaction(++countOfGeneratedTransaction, null, 292.39, "OUT", "Car Loan", 13, 70, null, (byte) 1, "monthly", 27, "2019-10-03", "2024-10-02", date, date));
 
+        // Batch insert transactions to the database
+        transactions.forEach(transaction -> transactionRegister.create(transaction));
     }
 
     private double generateRandomAmount(Random rnd) {

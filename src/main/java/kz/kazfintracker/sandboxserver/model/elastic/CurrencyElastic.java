@@ -4,6 +4,8 @@ import lombok.Data;
 
 import java.util.Map;
 
+import static kz.kazfintracker.sandboxserver.util.ParserUtil.parseBoolean;
+
 @Data
 public class CurrencyElastic {
     private String id;
@@ -18,7 +20,7 @@ public class CurrencyElastic {
         currency.setSymbol(map.get("symbol"));
         currency.setCode(map.get("code"));
         currency.setName(map.get("name"));
-        currency.setMainCurrency(Boolean.parseBoolean(map.get("mainCurrency")));
+        currency.setMainCurrency(parseBoolean(map.get("mainCurrency")));
         return currency;
     }
 }

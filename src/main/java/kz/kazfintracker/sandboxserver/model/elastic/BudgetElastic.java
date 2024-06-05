@@ -4,6 +4,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static kz.kazfintracker.sandboxserver.util.ParserUtil.*;
+
 @Data
 public class BudgetElastic {
     private Integer id;
@@ -16,13 +18,13 @@ public class BudgetElastic {
 
     public static BudgetElastic fromMap(Map<String, String> map) {
         BudgetElastic budget = new BudgetElastic();
-        budget.setId(Integer.parseInt(map.getOrDefault("id", "0")));
-        budget.setIdCategory(Integer.parseInt(map.getOrDefault("idCategory", "0")));
+        budget.setId(parseInt(map.getOrDefault("id", "0")));
+        budget.setIdCategory(parseInt(map.getOrDefault("idCategory", "0")));
         budget.setName(map.get("name"));
         budget.setAmountLimit(Double.parseDouble(map.getOrDefault("amountLimit", "0.0")));
-        budget.setActive(Boolean.parseBoolean(map.get("active")));
-        budget.setCreatedAt(LocalDateTime.parse(map.get("createdAt")));
-        budget.setUpdatedAt(LocalDateTime.parse(map.get("updatedAt")));
+        budget.setActive(parseBoolean(map.get("active")));
+        budget.setCreatedAt(parseLocalDateTime(map.get("createdAt")));
+        budget.setUpdatedAt(parseLocalDateTime(map.get("updatedAt")));
         return budget;
     }
 }

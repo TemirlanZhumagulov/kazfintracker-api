@@ -2,10 +2,10 @@ package kz.kazfintracker.sandboxserver.model.elastic;
 
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
+
+import static kz.kazfintracker.sandboxserver.util.ParserUtil.*;
 
 @Data
 public class TransactionElastic {
@@ -49,24 +49,5 @@ public class TransactionElastic {
         return transaction;
     }
 
-    private static LocalDateTime parseLocalDateTime(String dateTimeStr) {
-        return dateTimeStr != null ? LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_DATE_TIME) : null;
-    }
-
-    private static LocalDate parseLocalDate(String dateStr) {
-        return dateStr != null ? LocalDate.parse(dateStr) : null;
-    }
-
-    private static double parseAmount(String doubleStr) {
-        return doubleStr != null ? (double) Math.round(Double.parseDouble(doubleStr) * 100) / 100 : 0.00;
-    }
-
-    private static int parseInt(String intStr) {
-        return intStr != null ? Integer.parseInt(intStr) : 0;
-    }
-
-    private static boolean parseBoolean(String booleanStr) {
-        return Boolean.parseBoolean(booleanStr);
-    }
 
 }

@@ -73,7 +73,6 @@ public class MainConsumer {
     @KafkaListener(id = "transaction-elastic-consumer", topics = KafkaTopics.TOPIC_TRANSACTION, containerFactory = "containerFactory")
     public void transactionConsumer(String value) {
         try {
-            log.info("TRANSACTION CONSUMED: {}", value);
 
             KafkaEntity entity = ObjectMapperHolder.readJson(value, KafkaEntity.class);
 
