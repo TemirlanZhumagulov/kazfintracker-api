@@ -17,9 +17,9 @@ public class ChatController {
     }
 
     @PostMapping("/chat")
-    public ResponseEntity<String> chat(@RequestBody String message) {
+    public String chat(@RequestBody String message) {
         String response = chatService.chat(message);
-        return ResponseEntity.ok().body("{\"response\": \"" + response + "\"}");
+        return response;
     }
 
     @PostMapping("/chat/stream")

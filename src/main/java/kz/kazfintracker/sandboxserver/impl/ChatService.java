@@ -38,7 +38,7 @@ public class ChatService {
 
         var model = OpenAiChatModel.builder()
                 .apiKey(OPENAI_API_KEY)
-                .modelName("gpt-4")
+                .modelName("gpt-4o")
                 .temperature(0.3)
                 .timeout(ofSeconds(60))
                 .logRequests(false)

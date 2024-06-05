@@ -121,7 +121,7 @@ public class AuthenticationService {
   }
 
   private void validatePassword(String password) {
-    if (password == null || password.isEmpty()) {
+    if (password == null || password.length() > 8) {
       throw new RuntimeException("You haven't filled out your password!");
     }
   }
