@@ -18,6 +18,14 @@ repositories {
 
 dependencies {
 
+    // Apache POI for handling Excel files
+    implementation 'org.apache.poi:poi:5.2.2'
+    implementation 'org.apache.poi:poi-ooxml:5.2.2'
+
+    // JFreeChart for creating charts
+    implementation 'org.jfree:jfreechart:1.5.3'
+
+
     implementation 'com.github.langchain4j:langchain4j:0.27.1'
 //    implementation 'com.github.langchain4j:langchain4j-examples:0.30.0'
 //    implementation 'dev.langchain4j:langchain4j-embeddings-all-minilm-l6-v2:0.30.0'

@@ -11,12 +11,6 @@ public interface CrudElasticRegister<T, K> {
 
   List<T> load(TableRequest tableRequest, Paging paging);
 
-  void create(T client);
-
-  void update(T client);
-
-  void delete(K id);
-
   int count();
 
 }

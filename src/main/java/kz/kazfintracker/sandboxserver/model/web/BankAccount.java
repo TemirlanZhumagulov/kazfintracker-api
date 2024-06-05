@@ -1,5 +1,10 @@
 package kz.kazfintracker.sandboxserver.model.web;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
+@AllArgsConstructor
 public class BankAccount {
   public Integer id;
   public String name;

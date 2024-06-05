@@ -2,6 +2,7 @@ package kz.kazfintracker.sandboxserver.util.jackson;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
@@ -13,6 +14,8 @@ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 public final class ObjectMapperHolder {
 
   private static final ObjectMapper mapper = new ObjectMapper();
+
+  private static final ObjectMapper elasticMapper = new ObjectMapper();
 
   static {
     BasicPolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
@@ -43,4 +46,28 @@ public final class ObjectMapperHolder {
     }
   }
 
+  public static String writeElastic(Object value) {
+    try {
+      return elasticMapper.writeValueAsString(value);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T readElastic(String json, Class<T> valueType) {
+    try {
+      return elasticMapper.readValue(json, valueType);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+
+  public static JsonNode readTree(String responseBody) {
+    try {
+      return elasticMapper.readTree(responseBody);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

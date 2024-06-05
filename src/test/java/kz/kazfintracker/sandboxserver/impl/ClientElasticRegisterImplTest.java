@@ -2,7 +2,7 @@ package kz.kazfintracker.sandboxserver.impl;
 
 import kz.kazfintracker.sandboxserver.ParentTestNG;
 import kz.kazfintracker.sandboxserver.elastic.model.ClientResponse;
-import kz.kazfintracker.sandboxserver.consumer.ClientConsumer;
+import kz.kazfintracker.sandboxserver.consumer.MainConsumer;
 import kz.kazfintracker.sandboxserver.model.web.Paging;
 import kz.kazfintracker.sandboxserver.model.elastic.ClientElastic;
 import kz.kazfintracker.sandboxserver.model.web.ClientsTableRequest;
@@ -42,7 +42,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         //
 
         // invoke exact consumer
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
 
         assertThat(id).isNotNull();
 
@@ -71,7 +71,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         //
         //
 
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
 
         assertThat(id).isNotNull();
 
@@ -110,7 +110,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
                 clientRegister.create(toUpsert),
                 clientRegister.create(toUpsert)
         };
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse response2 = elasticRegister.loadAll(Paging.defaultPaging());
@@ -138,7 +138,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
             //
             //
         }
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse response = elasticRegister.loadAll(Paging.of(0,7));
@@ -178,7 +178,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("full_name", true);
         ctr.rndTestingId = uniqueTestingId;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
@@ -211,7 +211,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("full_name", false);
         ctr.rndTestingId = uniqueTestingId;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
 
         //
         //
@@ -246,7 +246,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("age", true);
         ctr.rndTestingId = uniqueTestingId;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
@@ -273,7 +273,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("age", false);
         ctr.rndTestingId = uniqueTestingId;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
@@ -301,7 +301,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("charm", true);
         ctr.rndTestingId = uniqueTestingId;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
@@ -330,7 +330,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("charm", false);
         ctr.rndTestingId = uniqueTestingId;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
@@ -359,7 +359,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("total_balance", true);
         ctr.rndTestingId = uniqueTestingId;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
@@ -387,7 +387,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("total_balance", false);
         ctr.rndTestingId = uniqueTestingId;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
@@ -415,7 +415,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("max_balance", true);
         ctr.rndTestingId = uniqueTestingId;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
@@ -443,7 +443,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("max_balance", false);
         ctr.rndTestingId = uniqueTestingId;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
@@ -471,7 +471,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("min_balance", true);
         ctr.rndTestingId = uniqueTestingId;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
@@ -499,7 +499,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("min_balance", false);
         ctr.rndTestingId = uniqueTestingId;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,10));
@@ -527,7 +527,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("charm", true);
         ctr.rndTestingId = uniqueTestingId;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,5));
@@ -561,7 +561,7 @@ public class ClientElasticRegisterImplTest extends ParentTestNG {
         ctr.sorting = new HashMap<>();
         ctr.sorting.put("charm", true);
         ctr.full_name = uniqueName;
-        kafkaProducerSimulator.push(ClientConsumer.class);
+        kafkaProducerSimulator.push(MainConsumer.class);
         //
         //
         ClientResponse clientResponse = elasticRegister.load(ctr, Paging.of(0,3));

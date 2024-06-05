@@ -64,6 +64,7 @@ public class ClientElasticRegisterImpl implements ClientElasticRegister {
 
     @Override
     public int getClientListCount() {
-        return elasticWorker.getClientListAll(ElasticIndexes.INDEX_CLIENT);
+        return elasticWorker.countDocuments(ElasticIndexes.INDEX_CLIENT);
     }
+
 }

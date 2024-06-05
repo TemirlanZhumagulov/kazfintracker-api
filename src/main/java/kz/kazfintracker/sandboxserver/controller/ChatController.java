@@ -9,26 +9,22 @@ import reactor.core.publisher.Flux;
 @RequestMapping("/v1/api")
 @CrossOrigin("*")
 public class ChatController {
-  private final ChatService chatService;
 
-  public ChatController(ChatService chatService) {
-    this.chatService = chatService;
-  }
+    private final ChatService chatService;
 
-  @PostMapping("/chat")
-  public ResponseEntity<String> chat(@RequestBody String message) {
-//    if(message.contains("report")){
-//      generateReportFileAndSendItToEmail();
-//      return "I have sent to you report email!";
-//    }
+    public ChatController(ChatService chatService) {
+        this.chatService = chatService;
+    }
 
-    String response = chatService.chat(message);
-    return ResponseEntity.ok().body("{\"response\": \"" + response + "\"}");
-  }
+    @PostMapping("/chat")
+    public ResponseEntity<String> chat(@RequestBody String message) {
+        String response = chatService.chat(message);
+        return ResponseEntity.ok().body("{\"response\": \"" + response + "\"}");
+    }
 
-  @PostMapping("/chat/stream")
-  public Flux<String> chatStream(@RequestBody String message) {
-    return chatService.chatStream(message);
-  }
+    @PostMapping("/chat/stream")
+    public Flux<String> chatStream(@RequestBody String message) {
+        return chatService.chatStream(message);
+    }
 
 }
