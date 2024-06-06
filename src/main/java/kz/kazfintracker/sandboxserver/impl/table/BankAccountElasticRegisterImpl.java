@@ -2,6 +2,9 @@ package kz.kazfintracker.sandboxserver.impl.table;
 
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
+import kz.greetgo.email.Attachment;
+import kz.greetgo.email.Email;
+import kz.greetgo.email.RealEmailSender;
 import kz.kazfintracker.sandboxserver.elastic.ElasticIndexes;
 import kz.kazfintracker.sandboxserver.elastic.ElasticWorker;
 import kz.kazfintracker.sandboxserver.elastic.model.ClientResponse;
@@ -25,6 +28,7 @@ import org.springframework.stereotype.Component;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -53,6 +57,10 @@ public class BankAccountElasticRegisterImpl {
     @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
     @Autowired
     private ElasticWorker elasticWorker;
+
+    @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
+    @Autowired
+    private RealEmailSender realEmailSender;
 
     public static String of(int month) {
         if (month >= 1 && month <= 12) {
@@ -268,5 +276,49 @@ public class BankAccountElasticRegisterImpl {
         // Implement writing transaction data to the sheet
     }
 
+    @Tool("Generates a financial budget report for a specified date range and sends it as an attachment to a provided email address.")
+    public void sendEmail(
+            @P("The email address to which the report will be sent. Cannot be null.") String to,
+            @P("The subject line for the email.") String subject,
+            @P("The body text of the email. This can include additional details or context about the attached report.") String body,
+            @P("The start date of the period for the financial report, formatted as 'yyyy-MM-dd'.") String startDate,
+            @P("The end date of the period for the financial report, formatted as 'yyyy-MM-dd'.") String endDate
+    ) throws IOException {
+
+        Email email = new Email();
+        email.setTo(to);
+        email.setSubject(subject);
+        email.setBody(body);
+        {
+            Attachment a = new Attachment();
+            a.name = "kazfintracker_report_" + LocalDate.now() + ".xlsx";
+            a.data = generateReport(startDate, endDate);
+            email.getAttachments().add(a);
+        }
+        realEmailSender.realSend(email);
+    }
+
+    @Tool("Sends an email with an attachment to a specified email address. This method is useful for sending documents or reports as email attachments.")
+    public void sendEmailWithAttachment(
+            @P("The email address to send the email to. Cannot be null.") String to,
+            @P("The subject line of the email.") String subject,
+            @P("The body content of the email, which can include details or context about the attached file.") String body,
+            @P("attachment file name.") String fileName,
+            @P("attachment file's content to be sent with the email.") String fileContent
+    ) {
+        Email email = new Email();
+        email.setTo(to);
+        email.setSubject(subject);
+        email.setBody(body);
+
+        if (fileContent != null && fileName != null) {
+            Attachment a = new Attachment();
+            a.name = fileName;
+            a.data = fileContent.getBytes(StandardCharsets.UTF_8);
+            email.getAttachments().add(a);
+        }
+
+        realEmailSender.realSend(email);
+    }
 
 }

@@ -3,6 +3,7 @@ package kz.kazfintracker.sandboxserver.prod.zookeeper;
 import kz.greetgo.conf.zookeeper.AbstractZookeeperConfigFactory;
 import kz.kazfintracker.sandboxserver.config.ElasticConfig;
 import kz.kazfintracker.sandboxserver.config.IgnoreKafkaExceptionConfig;
+import kz.kazfintracker.sandboxserver.config.SendEmailConfig;
 import kz.kazfintracker.sandboxserver.config.TestConfig;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,4 +59,10 @@ public class ZookeeperConfigFactoryAbstract extends AbstractZookeeperConfigFacto
   public IgnoreKafkaExceptionConfig ignoreKafkaExceptionConfig() {
     return createConfig(IgnoreKafkaExceptionConfig.class);
   }
+
+  @Bean
+  public SendEmailConfig sendEmailConfig() {
+    return createConfig(SendEmailConfig.class);
+  }
+
 }

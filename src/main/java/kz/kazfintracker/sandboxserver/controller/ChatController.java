@@ -1,9 +1,10 @@
 package kz.kazfintracker.sandboxserver.controller;
 
 import kz.kazfintracker.sandboxserver.impl.ChatService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/v1/api")
@@ -17,9 +18,11 @@ public class ChatController {
     }
 
     @PostMapping("/chat")
-    public String chat(@RequestBody String message) {
-        String response = chatService.chat(message);
-        return response;
+    public String chat(@RequestBody String message, Principal connectedUser) {
+        if(message.contains("email") || message.contains("mail")) {
+            message += " (Current user's email: " + connectedUser.getName();
+        }
+        return chatService.chat(message);
     }
 
     @PostMapping("/chat/stream")

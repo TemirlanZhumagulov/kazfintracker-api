@@ -112,9 +112,10 @@ public class AuthenticationService {
             throw new RuntimeException("You haven't filled out your email!");
         }
 
-        if (!email.contains("@")) {
+        if (!Pattern.compile("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$").matcher(email).matches()) {
             throw new RuntimeException("Incorrect email!");
         }
+
         // todo optimize change find to count
         if (repository.findByEmail(email).isPresent()) {
             throw new RuntimeException("There is already an existing user with this email!");
